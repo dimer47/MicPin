@@ -63,6 +63,10 @@ struct MenuContentView: View {
         }
     }
 
+    private var keepAliveToggle: some View {
+        KeepAliveToggle(keepAlive: controller.keepAlive)
+    }
+
     /// Ligne d'état sous le nom du micro : elle explique ce que fait l'app à l'instant.
     private var statusLine: String {
         if controller.isPinnedDeviceMissing {
@@ -127,6 +131,8 @@ struct MenuContentView: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
 
+            keepAliveToggle
+
             Toggle("Rechercher les mises à jour", isOn: $automaticUpdates)
                 .font(.system(size: 12))
                 .toggleStyle(.switch)
@@ -156,6 +162,52 @@ struct MenuContentView: View {
                     .controlSize(.small)
             }
         }
+    }
+}
+
+// MARK: - Maintien du micro éveillé
+
+private struct KeepAliveToggle: View {
+    let keepAlive: MicrophoneKeepAlive
+    @State private var isOn = false
+    @State private var isWorking = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Toggle("Garder le micro éveillé", isOn: $isOn)
+                .font(.system(size: 12))
+                .toggleStyle(.switch)
+                .controlSize(.mini)
+                .disabled(isWorking)
+                .onChange(of: isOn) { _, newValue in
+                    Task {
+                        isWorking = true
+                        if newValue {
+                            await keepAlive.activate()
+                            // L'activation peut échouer : refléter l'état réel.
+                            isOn = keepAlive.isActive
+                        } else {
+                            keepAlive.deactivate()
+                        }
+                        isWorking = false
+                    }
+                }
+
+            if let message = keepAlive.failureMessage {
+                Text(message)
+                    .font(.system(size: 10))
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            } else if keepAlive.isActive {
+                // L'indicateur orange de macOS va rester allumé : le dire évite
+                // l'inquiétude légitime de voir le micro « écouter » en continu.
+                Text("Le voyant orange reste allumé tant que c'est actif. Aucun son n'est enregistré.")
+                    .font(.system(size: 10))
+                    .foregroundStyle(.tertiary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .onAppear { isOn = keepAlive.isActive }
     }
 }
 

@@ -139,7 +139,16 @@ final class UpdateChecker {
             throw UpdateError.unexpectedResponse((response as? HTTPURLResponse)?.statusCode ?? 0)
         }
 
-        guard let object = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+        return try Self.parseRelease(data)
+    }
+
+    /// Extrait la version publiée d'une réponse de l'API GitHub.
+    ///
+    /// Séparée de l'appel réseau pour être vérifiable sans réseau : c'est ce code
+    /// qui décide de remplacer l'application sur la machine de l'utilisateur, il
+    /// doit être couvert par des tests.
+    nonisolated static func parseRelease(_ data: Data) throws -> AvailableUpdate {
+        guard let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
               let tag = object["tag_name"] as? String,
               let assets = object["assets"] as? [[String: Any]] else {
             throw UpdateError.unreadableResponse
@@ -408,7 +417,7 @@ final class UpdateChecker {
 
 // MARK: - Erreurs
 
-enum UpdateError: LocalizedError {
+enum UpdateError: LocalizedError, Equatable {
     case unexpectedResponse(Int)
     case unreadableResponse
     case noDiskImage

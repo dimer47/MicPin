@@ -44,6 +44,9 @@ final class MicrophoneController {
     /// Dernière reprise en main effectuée, pour l'afficher dans l'interface.
     private(set) var lastRestoration: Date?
 
+    /// Maintien du micro éveillé, piloté depuis le panneau.
+    let keepAlive = MicrophoneKeepAlive()
+
     // MARK: - Interne
 
     private let preferences: Preferences
@@ -194,6 +197,10 @@ final class MicrophoneController {
             pin(device)
         }
         syncCurrentDevice()
+
+        // AVAudioEngine reste attaché au périphérique qu'il avait au démarrage :
+        // sans relance, le maintien porterait toujours sur l'ancien micro.
+        keepAlive.restartIfActive()
         return true
     }
 

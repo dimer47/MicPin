@@ -24,6 +24,8 @@
 	<string>26.0</string>
 	<key>LSUIElement</key>
 	<true/>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>MicPin garde le micro éveillé pour supprimer la latence de reprise des casques Bluetooth. Aucun son n'est enregistré ni transmis.</string>
 	<key>NSHumanReadableCopyright</key>
 	<string></string>
 </dict>

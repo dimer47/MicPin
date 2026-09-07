@@ -25,6 +25,7 @@ MicPin fixes both halves: it pins the microphone **and** its volume, restoring t
 - **Pin a microphone** — MicPin watches for switches and immediately restores the device and its volume.
 - **Lightweight** — a native SwiftUI app, no virtual audio driver, no external dependencies.
 - **Out of the way** — lives in the menu bar, no Dock icon.
+- **Keep the mic awake** — removes the wake-up latency of Bluetooth headsets, for the duration of a call.
 - **Self-updating** — checks daily for a new version, and installs only what the author signed.
 
 ## Installation
@@ -59,6 +60,17 @@ Once pinned, the menu bar icon changes and MicPin restores your choice every tim
 ### If the icon doesn't appear
 
 A crowded menu bar leaves macOS no visible slot for new items. Free up space by Cmd-dragging an icon out of the bar, or use a menu bar manager.
+
+### Keeping the mic awake
+
+macOS closes the audio stream as soon as no application is using it, and the microphone goes to sleep. Waking it costs latency — clearly noticeable over Bluetooth, where the headset has to renegotiate its profile: the start of a sentence sometimes gets swallowed.
+
+The toggle holds a stream open to avoid that. It is **off by default and manual**, because it has a cost:
+
+- The orange microphone indicator stays lit while it's active — macOS shows it whenever an input stream exists, and no application can turn it off.
+- The Bluetooth radio never idles, which drains both devices.
+
+No audio is recorded or transmitted: the stream is read and discarded; its mere presence is what keeps the device awake.
 
 ## How it works
 

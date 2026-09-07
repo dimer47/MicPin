@@ -25,6 +25,7 @@ MicPin corrige les deux : il épingle le micro **et** son volume, et les restaur
 - **Épingler un micro** — MicPin surveille les bascules et remet aussitôt le périphérique voulu et son volume.
 - **Léger** — application native SwiftUI, aucun driver audio virtuel, aucune dépendance externe.
 - **Discret** — vit dans la barre des menus, pas d'icône dans le Dock.
+- **Garder le micro éveillé** — supprime la latence de reprise des casques Bluetooth, le temps d'une visioconférence.
 - **À jour** — vérifie une fois par jour s'il existe une nouvelle version, et n'installe que ce qui est signé par l'auteur.
 
 ## Installation
@@ -59,6 +60,17 @@ Une fois épinglé, l'icône de la barre change et MicPin restaure votre choix �
 ### Si l'icône n'apparaît pas
 
 Une barre des menus saturée empêche macOS d'attribuer un emplacement visible aux nouveaux éléments. Libérez de la place en faisant glisser une icône hors de la barre avec la touche Cmd enfoncée, ou utilisez un gestionnaire de barre des menus.
+
+### Garder le micro éveillé
+
+macOS ferme le flux audio dès que plus aucune application ne l'utilise, et le micro s'endort. La reprise coûte une latence, nettement perceptible en Bluetooth où le casque doit renégocier son profil : le début d'une phrase est parfois avalé.
+
+L'interrupteur maintient un flux ouvert pour éviter ça. Il est **coupé par défaut et manuel**, parce qu'il a un coût :
+
+- Le voyant orange de micro reste allumé tant qu'il est actif — macOS l'affiche dès qu'un flux d'entrée existe, aucune application ne peut le désactiver.
+- La radio Bluetooth ne se met plus en veille, ce qui consomme des deux côtés.
+
+Aucun son n'est enregistré ni transmis : le flux est lu puis jeté, seule sa présence garde le périphérique éveillé.
 
 ## Détails techniques
 

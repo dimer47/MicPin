@@ -20,6 +20,7 @@
 		C725834DD8594563B7BF354C /* PreferencesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F43971143D4C028F631315 /* PreferencesTests.swift */; };
 		411693B72FA54A818F2ABAFF /* AudioDeviceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4EAACB0834F043E18DFDF3A2 /* AudioDeviceTests.swift */; };
 		EC9A42760ACC4D188A0CDFD4 /* MicrophoneControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E2898F519F046D58C805870 /* MicrophoneControllerTests.swift */; };
+		82B5910DBEEF4124AA983CFC /* MicrophoneKeepAlive.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23D3AC0E80CD40DBAD715BEC /* MicrophoneKeepAlive.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -50,6 +51,7 @@
 		4EAACB0834F043E18DFDF3A2 /* AudioDeviceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioDeviceTests.swift; sourceTree = "<group>"; };
 		3E2898F519F046D58C805870 /* MicrophoneControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MicrophoneControllerTests.swift; sourceTree = "<group>"; };
 		2CAE964B5A2B4867BA2526C5 /* MicPinTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MicPinTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		23D3AC0E80CD40DBAD715BEC /* MicrophoneKeepAlive.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MicrophoneKeepAlive.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXTargetDependency section */
@@ -101,6 +103,7 @@
 		6C0B21411CFE4B8689172289 /* Sources */ = {
 			isa = PBXGroup;
 			children = (
+				23D3AC0E80CD40DBAD715BEC /* MicrophoneKeepAlive.swift */,
 				73DB57E8E30C49A8AFAD0BCA /* UpdateChecker.swift */,
 				4F5AFD879C9F457EB6DADF77 /* MenuBarIcon.swift */,
 				820779434F354074BE4AED50 /* MicPinApp.swift */,
@@ -236,6 +239,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				82B5910DBEEF4124AA983CFC /* MicrophoneKeepAlive.swift in Sources */,
 				54551A6021084F1EAFE90869 /* UpdateChecker.swift in Sources */,
 				5C31A97F301D4EE4BC240439 /* MenuBarIcon.swift in Sources */,
 				ECDB827FEF8649C18CE94B39 /* MicPinApp.swift in Sources */,
