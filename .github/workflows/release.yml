@@ -38,7 +38,7 @@ jobs:
 
     steps:
       - name: Récupérer les sources
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
 
       # Le certificat est importé dans un trousseau temporaire, propre à cette
       # exécution : il disparaît avec la machine virtuelle.
