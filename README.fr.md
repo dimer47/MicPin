@@ -55,11 +55,11 @@ Xcode 26 est nécessaire. Pour lancer les tests : remplacez `build` par `test`.
 1. Choisissez votre micro dans la liste.
 2. Réglez le niveau d'entrée au curseur.
 3. Cliquez sur l'épingle pour verrouiller ce micro et son volume.
+4. Activez « Garder le micro éveillé » avant un appel, coupez-le après.
 
 **Clic droit** (ou Contrôle-clic) — les réglages :
 
 - Lancer au démarrage
-- Garder le micro éveillé
 - Rechercher les mises à jour, et vérifier maintenant
 - Quitter
 

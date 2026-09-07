@@ -113,12 +113,6 @@ final class StatusItemController: NSObject {
             isOn: Preferences.shared.launchesAtLogin,
             action: #selector(toggleLaunchAtLogin)
         ))
-        menu.addItem(settingsItem(
-            title: "Garder le micro éveillé",
-            isOn: controller.keepAlive.isActive,
-            action: #selector(toggleKeepAlive)
-        ))
-
         menu.addItem(.separator())
 
         menu.addItem(settingsItem(
@@ -168,19 +162,6 @@ final class StatusItemController: NSObject {
                     + "d'enregistrer une application située ailleurs."
             )
             return
-        }
-    }
-
-    @objc private func toggleKeepAlive() {
-        Task {
-            if controller.keepAlive.isActive {
-                controller.keepAlive.deactivate()
-            } else {
-                await controller.keepAlive.activate()
-                if let message = controller.keepAlive.failureMessage {
-                    presentAlert(title: "Micro inaccessible", message: message)
-                }
-            }
         }
     }
 

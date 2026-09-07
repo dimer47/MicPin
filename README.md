@@ -55,11 +55,11 @@ Xcode 26 is required. To run the tests, replace `build` with `test`.
 1. Pick your microphone from the list.
 2. Adjust the input level with the slider.
 3. Click the pin to lock that microphone and its volume in place.
+4. Turn on "Keep the mic awake" before a call, off afterwards.
 
 **Right-click** (or Control-click) — the settings:
 
 - Launch at login
-- Keep the mic awake
 - Check for updates, and check now
 - Quit
 

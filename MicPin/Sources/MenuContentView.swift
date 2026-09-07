@@ -20,6 +20,9 @@ struct MenuContentView: View {
             }
 
             Divider().opacity(0.4)
+            KeepAliveToggle(keepAlive: controller.keepAlive)
+
+            Divider().opacity(0.4)
             footer
         }
         .padding(16)
@@ -113,11 +116,60 @@ struct MenuContentView: View {
         HStack(spacing: 4) {
             Image(systemName: "cursorarrow.click")
                 .font(.system(size: 9))
-            Text("Clic droit sur l'icône pour les réglages")
+            Text("Clic droit sur l'icône : démarrage, mises à jour, quitter")
                 .font(.system(size: 10))
         }
         .foregroundStyle(.tertiary)
         .frame(maxWidth: .infinity, alignment: .center)
+    }
+}
+
+// MARK: - Maintien du micro éveillé
+
+/// Interrupteur du maintien, placé dans le panneau et non dans les réglages :
+/// c'est une action ponctuelle qu'on active avant un appel et qu'on coupe après,
+/// pas une préférence qu'on pose une fois pour toutes.
+private struct KeepAliveToggle: View {
+    let keepAlive: MicrophoneKeepAlive
+    @State private var isOn = false
+    @State private var isWorking = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Toggle("Garder le micro éveillé", isOn: $isOn)
+                .font(.system(size: 12))
+                .toggleStyle(.switch)
+                .controlSize(.mini)
+                .disabled(isWorking)
+                .onChange(of: isOn) { _, newValue in
+                    Task {
+                        isWorking = true
+                        if newValue {
+                            await keepAlive.activate()
+                            // L'activation peut échouer : refléter l'état réel.
+                            isOn = keepAlive.isActive
+                        } else {
+                            keepAlive.deactivate()
+                        }
+                        isWorking = false
+                    }
+                }
+
+            if let message = keepAlive.failureMessage {
+                Text(message)
+                    .font(.system(size: 10))
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            } else if keepAlive.isActive {
+                // Le voyant orange va rester allumé : le dire évite l'inquiétude
+                // légitime de voir le micro « écouter » en continu.
+                Text("Le voyant orange reste allumé. Aucun son n'est enregistré.")
+                    .font(.system(size: 10))
+                    .foregroundStyle(.tertiary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .onAppear { isOn = keepAlive.isActive }
     }
 }
 
