@@ -1,6 +1,10 @@
-# MicPin
+<p align="center">
+  <img src="docs/icon.png" alt="MicPin" width="128">
+</p>
 
-*[Version française](README.fr.md)*
+<h1 align="center">MicPin</h1>
+
+<p align="center"><a href="README.fr.md">Version française</a></p>
 
 A small macOS menu bar utility that pins your input microphone and its volume, so macOS stops changing them behind your back.
 

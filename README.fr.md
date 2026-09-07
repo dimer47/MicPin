@@ -1,6 +1,10 @@
-# MicPin
+<p align="center">
+  <img src="docs/icon.png" alt="MicPin" width="128">
+</p>
 
-*[English version](README.md)*
+<h1 align="center">MicPin</h1>
+
+<p align="center"><a href="README.md">English version</a></p>
 
 Un petit utilitaire de barre des menus pour macOS qui épingle votre micro d'entrée et son volume, pour que macOS cesse de les changer dans votre dos.
 
