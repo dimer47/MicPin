@@ -50,10 +50,20 @@ Xcode 26 is required. To run the tests, replace `build` with `test`.
 
 ## Usage
 
-1. Launch MicPin — its icon appears in the menu bar.
-2. Click it to see your microphones, then pick one.
-3. Adjust the input level with the slider.
-4. Click the pin to lock that microphone and its volume in place.
+**Left-click** the icon — the microphone panel:
+
+1. Pick your microphone from the list.
+2. Adjust the input level with the slider.
+3. Click the pin to lock that microphone and its volume in place.
+
+**Right-click** (or Control-click) — the settings:
+
+- Launch at login
+- Keep the mic awake
+- Check for updates, and check now
+- Quit
+
+This split follows the macOS convention: everyday use on the left, configuration on the right.
 
 Once pinned, the menu bar icon changes and MicPin restores your choice every time macOS tries to switch. Click the pin again to release it.
 
@@ -92,6 +102,8 @@ Three decisions are worth explaining, since they aren't obvious from reading the
 | `Preferences.swift` | Persistence and launch-at-login |
 | `MenuContentView.swift` | The menu bar panel |
 | `MenuBarIcon.swift` | Menu bar icon rendering |
+| `StatusItemController.swift` | Status item: left-click and right-click |
+| `MicrophoneKeepAlive.swift` | Keeping the mic awake |
 | `UpdateChecker.swift` | Update checking and installation |
 
 The app is not sandboxed: reading and changing system audio devices requires it.

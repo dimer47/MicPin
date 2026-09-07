@@ -50,10 +50,20 @@ Xcode 26 est nécessaire. Pour lancer les tests : remplacez `build` par `test`.
 
 ## Utilisation
 
-1. Lancez MicPin — son icône apparaît dans la barre des menus.
-2. Cliquez dessus pour voir vos micros, choisissez-en un.
-3. Réglez le niveau d'entrée au curseur.
-4. Cliquez sur l'épingle pour verrouiller ce micro et son volume.
+**Clic gauche** sur l'icône — le panneau des micros :
+
+1. Choisissez votre micro dans la liste.
+2. Réglez le niveau d'entrée au curseur.
+3. Cliquez sur l'épingle pour verrouiller ce micro et son volume.
+
+**Clic droit** (ou Contrôle-clic) — les réglages :
+
+- Lancer au démarrage
+- Garder le micro éveillé
+- Rechercher les mises à jour, et vérifier maintenant
+- Quitter
+
+Cette répartition suit la convention macOS : l'usage courant à gauche, la configuration à droite.
 
 Une fois épinglé, l'icône de la barre change et MicPin restaure votre choix à chaque tentative de bascule de macOS. Cliquez de nouveau sur l'épingle pour lever le verrouillage.
 
@@ -92,6 +102,8 @@ Trois décisions valent d'être expliquées, parce qu'elles ne sont pas évident
 | `Preferences.swift` | Persistance et lancement au démarrage |
 | `MenuContentView.swift` | Le panneau de la barre des menus |
 | `MenuBarIcon.swift` | Fabrication de l'icône de la barre |
+| `StatusItemController.swift` | Élément de barre : clic gauche et clic droit |
+| `MicrophoneKeepAlive.swift` | Maintien du micro éveillé |
 | `UpdateChecker.swift` | Recherche et installation des mises à jour |
 
 L'app n'est pas en bac à sable : lire et modifier les périphériques audio du système l'exige.

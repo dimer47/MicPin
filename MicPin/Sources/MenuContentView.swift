@@ -6,9 +6,6 @@ import SwiftUI
 /// natif ne peut pas héberger de curseur de volume ni les matériaux Liquid Glass.
 struct MenuContentView: View {
     @Environment(MicrophoneController.self) private var controller
-    @State private var launchesAtLogin = Preferences.shared.launchesAtLogin
-    @State private var launchAtLoginFailed = false
-    @State private var automaticUpdates = Preferences.shared.automaticUpdates
 
     var body: some View {
         @Bindable var controller = controller
@@ -63,10 +60,6 @@ struct MenuContentView: View {
         }
     }
 
-    private var keepAliveToggle: some View {
-        KeepAliveToggle(keepAlive: controller.keepAlive)
-    }
-
     /// Ligne d'état sous le nom du micro : elle explique ce que fait l'app à l'instant.
     private var statusLine: String {
         if controller.isPinnedDeviceMissing {
@@ -110,104 +103,21 @@ struct MenuContentView: View {
 
     // MARK: - Pied
 
+    /// Rappelle où trouver les réglages.
+    ///
+    /// Les réglages sont au clic droit, suivant la convention macOS : clic gauche
+    /// pour l'usage courant, clic droit pour la configuration. Sans cette mention,
+    /// rien ne l'indiquerait — un menu contextuel est invisible tant qu'on ne l'a
+    /// pas ouvert.
     private var footer: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Toggle("Lancer au démarrage", isOn: $launchesAtLogin)
-                .font(.system(size: 12))
-                .toggleStyle(.switch)
-                .controlSize(.mini)
-                .onChange(of: launchesAtLogin) { _, newValue in
-                    let succeeded = Preferences.shared.setLaunchesAtLogin(newValue)
-                    if !succeeded {
-                        launchAtLoginFailed = true
-                        launchesAtLogin = Preferences.shared.launchesAtLogin
-                    }
-                }
-
-            if launchAtLoginFailed {
-                Text("Impossible d'activer le lancement au démarrage. Placez MicPin dans le dossier Applications.")
-                    .font(.system(size: 10))
-                    .foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-
-            keepAliveToggle
-
-            Toggle("Rechercher les mises à jour", isOn: $automaticUpdates)
-                .font(.system(size: 12))
-                .toggleStyle(.switch)
-                .controlSize(.mini)
-                .onChange(of: automaticUpdates) { _, newValue in
-                    Preferences.shared.automaticUpdates = newValue
-                    if newValue {
-                        UpdateChecker.shared.startMonitoring()
-                    } else {
-                        UpdateChecker.shared.stopMonitoring()
-                    }
-                }
-
-            HStack {
-                Button("Vérifier maintenant") {
-                    Task { await UpdateChecker.shared.check(silently: false) }
-                }
-                .buttonStyle(.glass)
-                .controlSize(.small)
-
-                Spacer()
-                Button("Quitter") {
-                    controller.stopObserving()
-                    NSApplication.shared.terminate(nil)
-                }
-                    .buttonStyle(.glass)
-                    .controlSize(.small)
-            }
+        HStack(spacing: 4) {
+            Image(systemName: "cursorarrow.click")
+                .font(.system(size: 9))
+            Text("Clic droit sur l'icône pour les réglages")
+                .font(.system(size: 10))
         }
-    }
-}
-
-// MARK: - Maintien du micro éveillé
-
-private struct KeepAliveToggle: View {
-    let keepAlive: MicrophoneKeepAlive
-    @State private var isOn = false
-    @State private var isWorking = false
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Toggle("Garder le micro éveillé", isOn: $isOn)
-                .font(.system(size: 12))
-                .toggleStyle(.switch)
-                .controlSize(.mini)
-                .disabled(isWorking)
-                .onChange(of: isOn) { _, newValue in
-                    Task {
-                        isWorking = true
-                        if newValue {
-                            await keepAlive.activate()
-                            // L'activation peut échouer : refléter l'état réel.
-                            isOn = keepAlive.isActive
-                        } else {
-                            keepAlive.deactivate()
-                        }
-                        isWorking = false
-                    }
-                }
-
-            if let message = keepAlive.failureMessage {
-                Text(message)
-                    .font(.system(size: 10))
-                    .foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
-            } else if keepAlive.isActive {
-                // L'indicateur orange de macOS va rester allumé : le dire évite
-                // l'inquiétude légitime de voir le micro « écouter » en continu.
-                Text("Le voyant orange reste allumé tant que c'est actif. Aucun son n'est enregistré.")
-                    .font(.system(size: 10))
-                    .foregroundStyle(.tertiary)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-        }
-        .onAppear { isOn = keepAlive.isActive }
+        .foregroundStyle(.tertiary)
+        .frame(maxWidth: .infinity, alignment: .center)
     }
 }
 

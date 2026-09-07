@@ -1,30 +1,44 @@
+import AppKit
 import SwiftUI
 
+/// Point d'entrée.
+///
+/// L'élément de barre est piloté par `StatusItemController` en AppKit, et non par
+/// `MenuBarExtra` : ce dernier ne distingue pas le clic gauche du clic droit, or la
+/// convention macOS place l'usage courant à gauche et la configuration à droite.
+///
+/// La scène SwiftUI reste vide : elle n'existe que pour satisfaire le protocole
+/// `App`, toute l'interface passant par le contrôleur.
 @main
 struct MicPinApp: App {
-    @State private var controller = MicrophoneController()
+    @NSApplicationDelegateAdaptor(AppDelegate.self) private var delegate
 
     var body: some Scene {
-        MenuBarExtra {
-            MenuContentView()
-                .environment(controller)
-            .onAppear { UpdateChecker.shared.startMonitoring() }
-        } label: {
-            // L'icône reflète l'état d'un coup d'œil : barrée quand le micro épinglé
-            // est débranché, épingle quand le verrouillage est actif.
-            //
-            // Passe par `MenuBarIcon` plutôt que par `Image(systemName:)` : la marge
-            // latérale doit être dessinée dans le bitmap, le label d'un
-            // `MenuBarExtra` ignorant les modificateurs de disposition.
-            Image(nsImage: MenuBarIcon.image(symbolName: menuBarSymbol))
-        }
-        // Style fenêtre, et non menu : un menu natif n'accepte ni curseur ni
-        // matériaux Liquid Glass.
-        .menuBarExtraStyle(.window)
+        Settings { EmptyView() }
+    }
+}
+
+@MainActor
+final class AppDelegate: NSObject, NSApplicationDelegate {
+    private var controller: MicrophoneController?
+    private var statusItem: StatusItemController?
+
+    func applicationDidFinishLaunching(_ notification: Notification) {
+        let controller = MicrophoneController()
+        let statusItem = StatusItemController(controller: controller)
+        statusItem.install()
+
+        self.controller = controller
+        self.statusItem = statusItem
+
+        UpdateChecker.shared.startMonitoring()
     }
 
-    private var menuBarSymbol: String {
-        if controller.isPinnedDeviceMissing { return "mic.slash" }
-        return controller.isPinned ? "mic.badge.plus" : "mic"
+    func applicationWillTerminate(_ notification: Notification) {
+        // Libérer le flux d'entrée avant de partir : sans cela, le voyant orange
+        // de micro peut rester allumé jusqu'à ce que macOS fasse le ménage.
+        controller?.keepAlive.deactivate()
+        controller?.stopObserving()
+        statusItem?.uninstall()
     }
 }
