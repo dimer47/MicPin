@@ -15,7 +15,22 @@
 		CE43E6FDD5D14A78924461C0 /* MenuContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73BD867822804A61830D60CE /* MenuContentView.swift */; };
 		5C31A97F301D4EE4BC240439 /* MenuBarIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F5AFD879C9F457EB6DADF77 /* MenuBarIcon.swift */; };
 		4F487714800B423E898B57C1 /* AppIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = 8C83BC14627943DC8B1C9F94 /* AppIcon.icns */; };
+		54551A6021084F1EAFE90869 /* UpdateChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73DB57E8E30C49A8AFAD0BCA /* UpdateChecker.swift */; };
+		9F665AD3045E439B917F7B5C /* UpdateCheckerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6F80E0B2C794C63B880B431 /* UpdateCheckerTests.swift */; };
+		C725834DD8594563B7BF354C /* PreferencesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83F43971143D4C028F631315 /* PreferencesTests.swift */; };
+		411693B72FA54A818F2ABAFF /* AudioDeviceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4EAACB0834F043E18DFDF3A2 /* AudioDeviceTests.swift */; };
+		EC9A42760ACC4D188A0CDFD4 /* MicrophoneControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E2898F519F046D58C805870 /* MicrophoneControllerTests.swift */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		624B9492A9F64B539DF83D2D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F8DD9E73079B44819C711770 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = BE9697C155BA42BBB4A2C55A;
+			remoteInfo = MicPin;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		F85B3FEE74454595BA9CD28C /* MicPin.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MicPin.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -29,10 +44,31 @@
 		73BD867822804A61830D60CE /* MenuContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuContentView.swift; sourceTree = "<group>"; };
 		4F5AFD879C9F457EB6DADF77 /* MenuBarIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarIcon.swift; sourceTree = "<group>"; };
 		8C83BC14627943DC8B1C9F94 /* AppIcon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = AppIcon.icns; sourceTree = "<group>"; };
+		73DB57E8E30C49A8AFAD0BCA /* UpdateChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateChecker.swift; sourceTree = "<group>"; };
+		C6F80E0B2C794C63B880B431 /* UpdateCheckerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateCheckerTests.swift; sourceTree = "<group>"; };
+		83F43971143D4C028F631315 /* PreferencesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreferencesTests.swift; sourceTree = "<group>"; };
+		4EAACB0834F043E18DFDF3A2 /* AudioDeviceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioDeviceTests.swift; sourceTree = "<group>"; };
+		3E2898F519F046D58C805870 /* MicrophoneControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MicrophoneControllerTests.swift; sourceTree = "<group>"; };
+		2CAE964B5A2B4867BA2526C5 /* MicPinTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MicPinTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
+
+/* Begin PBXTargetDependency section */
+		22101AA249DE413B908B0AC1 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = BE9697C155BA42BBB4A2C55A /* MicPin */;
+			targetProxy = 624B9492A9F64B539DF83D2D /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		ECADEF33474F4D9EBB9718A4 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		860C0EB3C4174F52A47F6CA1 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -46,6 +82,7 @@
 			isa = PBXGroup;
 			children = (
 				7F904FA4FAD14E04A50FA598 /* MicPin */,
+				8A80B784608E4420BCFC0994 /* Tests */,
 				AD019F1CE1824528A534849C /* Products */,
 			);
 			sourceTree = "<group>";
@@ -64,6 +101,7 @@
 		6C0B21411CFE4B8689172289 /* Sources */ = {
 			isa = PBXGroup;
 			children = (
+				73DB57E8E30C49A8AFAD0BCA /* UpdateChecker.swift */,
 				4F5AFD879C9F457EB6DADF77 /* MenuBarIcon.swift */,
 				820779434F354074BE4AED50 /* MicPinApp.swift */,
 				CA11C6D84B37459480F891D2 /* MicrophoneController.swift */,
@@ -78,6 +116,7 @@
 		AD019F1CE1824528A534849C /* Products */ = {
 			isa = PBXGroup;
 			children = (
+				2CAE964B5A2B4867BA2526C5 /* MicPinTests.xctest */,
 				F85B3FEE74454595BA9CD28C /* MicPin.app */,
 			);
 			name = Products;
@@ -89,6 +128,17 @@
 				8C83BC14627943DC8B1C9F94 /* AppIcon.icns */,
 			);
 			path = Resources;
+			sourceTree = "<group>";
+		};
+		8A80B784608E4420BCFC0994 /* Tests */ = {
+			isa = PBXGroup;
+			children = (
+				C6F80E0B2C794C63B880B431 /* UpdateCheckerTests.swift */,
+				83F43971143D4C028F631315 /* PreferencesTests.swift */,
+				4EAACB0834F043E18DFDF3A2 /* AudioDeviceTests.swift */,
+				3E2898F519F046D58C805870 /* MicrophoneControllerTests.swift */,
+			);
+			path = Tests;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -110,6 +160,24 @@
 			productName = MicPin;
 			productReference = F85B3FEE74454595BA9CD28C /* MicPin.app */;
 			productType = "com.apple.product-type.application";
+		};
+		8C5AD4F43EFA48CE95786A56 /* MicPinTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 9361C654794948ABB0B0E8B2 /* Build configuration list for PBXNativeTarget "MicPinTests" */;
+			buildPhases = (
+				7AE69F65ED6C4A78ACCDB991 /* Sources */,
+				860C0EB3C4174F52A47F6CA1 /* Frameworks */,
+				07A7CC797776403FB99149B5 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				22101AA249DE413B908B0AC1 /* PBXTargetDependency */,
+			);
+			name = MicPinTests;
+			productName = MicPinTests;
+			productReference = 2CAE964B5A2B4867BA2526C5 /* MicPinTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
 		};
 /* End PBXNativeTarget section */
 
@@ -140,6 +208,7 @@
 			projectRoot = "";
 			targets = (
 				BE9697C155BA42BBB4A2C55A /* MicPin */,
+				8C5AD4F43EFA48CE95786A56 /* MicPinTests */,
 			);
 		};
 /* End PBXProject section */
@@ -153,6 +222,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		07A7CC797776403FB99149B5 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -160,6 +236,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				54551A6021084F1EAFE90869 /* UpdateChecker.swift in Sources */,
 				5C31A97F301D4EE4BC240439 /* MenuBarIcon.swift in Sources */,
 				ECDB827FEF8649C18CE94B39 /* MicPinApp.swift in Sources */,
 				0392C0A518C84132A0BC5901 /* MicrophoneController.swift in Sources */,
@@ -167,6 +244,17 @@
 				A49BF26A5B14486CB9984F5C /* AudioDevice.swift in Sources */,
 				1B5E0C00F0CF45839B505A5F /* Preferences.swift in Sources */,
 				CE43E6FDD5D14A78924461C0 /* MenuContentView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		7AE69F65ED6C4A78ACCDB991 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9F665AD3045E439B917F7B5C /* UpdateCheckerTests.swift in Sources */,
+				C725834DD8594563B7BF354C /* PreferencesTests.swift in Sources */,
+				411693B72FA54A818F2ABAFF /* AudioDeviceTests.swift in Sources */,
+				EC9A42760ACC4D188A0CDFD4 /* MicrophoneControllerTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -258,6 +346,40 @@
 			};
 			name = Release;
 		};
+		53F50E8122CC4A51BE535460 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.dimer47.MicPinTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 6.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/MicPin.app/Contents/MacOS/MicPin";
+			};
+			name = Debug;
+		};
+		ED205F5C88C94BA19EB49330 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.dimer47.MicPinTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 6.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/MicPin.app/Contents/MacOS/MicPin";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -275,6 +397,15 @@
 			buildConfigurations = (
 				C40860FC07174D2DB18ED63F /* Debug */,
 				574AB1DF103F4F97A455C35C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		9361C654794948ABB0B0E8B2 /* Build configuration list for PBXNativeTarget "MicPinTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				53F50E8122CC4A51BE535460 /* Debug */,
+				ED205F5C88C94BA19EB49330 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

@@ -1,0 +1,36 @@
+name: Tests
+
+# Vérifie que le projet compile et que les tests passent, à chaque poussée et à
+# chaque proposition de fusion. Aucun secret n'est nécessaire : la compilation
+# se fait en signature ad-hoc, sans certificat de distribution.
+
+on:
+  push:
+    branches: [main]
+    # Les poussées de tag déclenchent la publication, qui compile et teste
+    # elle-même : inutile de le faire deux fois.
+    tags-ignore: ['**']
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  tests:
+    name: Compilation et tests
+    runs-on: macos-26
+
+    steps:
+      - name: Récupérer les sources
+        uses: actions/checkout@v5
+
+      - name: Compiler et lancer les tests
+        run: |
+          xcodebuild \
+            -project MicPin.xcodeproj \
+            -scheme MicPin \
+            -configuration Debug \
+            -derivedDataPath build \
+            CODE_SIGN_IDENTITY=- \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            test

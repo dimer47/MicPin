@@ -21,10 +21,19 @@ MicPin fixes both halves: it pins the microphone **and** its volume, restoring t
 - **Pin a microphone** — MicPin watches for switches and immediately restores the device and its volume.
 - **Lightweight** — a native SwiftUI app, no virtual audio driver, no external dependencies.
 - **Out of the way** — lives in the menu bar, no Dock icon.
+- **Self-updating** — checks daily for a new version, and installs only what the author signed.
 
 ## Installation
 
-No prebuilt release is published yet; build from source.
+Download the disk image from the [latest release](https://github.com/dimer47/MicPin/releases/latest), then drag MicPin into your Applications folder.
+
+The app is signed and notarized by Apple, so there's no security warning on first launch.
+
+The location matters: `SMAppService` refuses to register launch-at-login for an app living anywhere other than `/Applications`.
+
+**Requirements**: macOS 26 or later.
+
+### Building from source
 
 ```bash
 git clone https://github.com/dimer47/MicPin.git
@@ -32,15 +41,7 @@ cd MicPin
 xcodebuild -project MicPin.xcodeproj -scheme MicPin -configuration Release build
 ```
 
-Then copy the built app into `/Applications`:
-
-```bash
-cp -R ~/Library/Developer/Xcode/DerivedData/MicPin-*/Build/Products/Release/MicPin.app /Applications/
-```
-
-The location matters: `SMAppService` refuses to register launch-at-login for an app living anywhere other than `/Applications`.
-
-**Requirements**: macOS 26 or later, Xcode 26 to build.
+Xcode 26 is required. To run the tests, replace `build` with `test`.
 
 ## Usage
 
@@ -61,7 +62,7 @@ Three decisions are worth explaining, since they aren't obvious from reading the
 
 **Persistence keys on UID, not device ID.** The `AudioObjectID` CoreAudio assigns to a device changes on every reconnection. The UID survives reboots, so that's what gets stored — which is why pinning holds when you unplug and replug the microphone.
 
-**Restoration is rate-limited.** If a device stubbornly refused to stay selected, rewriting the default input in a loop would spin the app against CoreAudio indefinitely. MicPin caps restorations at five per ten-second window, and releases the pin beyond that rather than fighting on.
+**Restoration is rate-limited.** If a device stubbornly refused to stay selected, rewriting the default input in a loop would spin the app against CoreAudio indefinitely. MicPin caps restorations at five per ten-second window, then pauses enforcement for one window. The pin itself is kept: a burst of notifications — waking from sleep, say — must never erase the user's setting.
 
 **The volume slider greys out on some microphones.** Many USB and Bluetooth devices don't expose `kAudioDevicePropertyVolumeScalar` as writable — their gain is hardware-controlled. MicPin detects this and says so, instead of leaving a dead control on screen.
 
@@ -75,8 +76,15 @@ Three decisions are worth explaining, since they aren't obvious from reading the
 | `Preferences.swift` | Persistence and launch-at-login |
 | `MenuContentView.swift` | The menu bar panel |
 | `MenuBarIcon.swift` | Menu bar icon rendering |
+| `UpdateChecker.swift` | Update checking and installation |
 
 The app is not sandboxed: reading and changing system audio devices requires it.
+
+## Contributing
+
+Run the tests with `xcodebuild -project MicPin.xcodeproj -scheme MicPin test`; they also run on every push via GitHub Actions.
+
+The release process is documented in [docs/publication.md](docs/publication.md) (in French).
 
 ## License
 

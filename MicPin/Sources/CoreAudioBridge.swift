@@ -204,6 +204,11 @@ enum CoreAudioBridge {
     }
 
     /// Définit le périphérique d'entrée par défaut du système.
+    ///
+    /// Le succès est vérifié par relecture, et non d'après le code de retour :
+    /// CoreAudio répond `noErr` à l'écriture d'un AudioObjectID inexistant tout
+    /// en laissant l'entrée inchangée. S'y fier ferait croire à une sélection
+    /// réussie sur un périphérique débranché entre-temps.
     @discardableResult
     static func setDefaultInputDevice(_ device: AudioDevice) -> Bool {
         var addr = address(kAudioHardwarePropertyDefaultInputDevice)
@@ -213,10 +218,16 @@ enum CoreAudioBridge {
             AudioObjectID(kAudioObjectSystemObject), &addr, 0, nil, size, &id
         )
 
-        if status != noErr {
-            log.error("Échec de la sélection de « \(device.name) » comme entrée par défaut : \(status)")
+        guard status == noErr else {
+            log.error("Échec de la sélection de « \(device.name) » : \(status)")
             return false
         }
+
+        guard defaultInputDeviceID() == device.id else {
+            log.error("« \(device.name) » n'a pas été retenu comme entrée par défaut")
+            return false
+        }
+
         log.info("Entrée par défaut : « \(device.name) »")
         return true
     }

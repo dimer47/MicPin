@@ -15,6 +15,7 @@ final class Preferences: Sendable {
     private enum Key {
         static let pinnedUID = "pinnedDeviceUID"
         static let pinnedVolume = "pinnedDeviceVolume"
+        static let updatesDisabled = "automaticUpdatesDisabled"
     }
 
     /// `nonisolated(unsafe)` : `UserDefaults` est thread-safe d'après sa
@@ -49,6 +50,16 @@ final class Preferences: Sendable {
                 defaults.removeObject(forKey: Key.pinnedVolume)
             }
         }
+    }
+
+    /// Vérification quotidienne des mises à jour.
+    ///
+    /// Activée par défaut : `bool(forKey:)` renvoie `false` pour une clé absente,
+    /// on inverse donc le sens du stockage pour qu'une première exécution, sans
+    /// préférence enregistrée, surveille les mises à jour.
+    var automaticUpdates: Bool {
+        get { !defaults.bool(forKey: Key.updatesDisabled) }
+        set { defaults.set(!newValue, forKey: Key.updatesDisabled) }
     }
 
     // MARK: - Lancement au démarrage de session

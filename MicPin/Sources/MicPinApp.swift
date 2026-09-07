@@ -8,6 +8,7 @@ struct MicPinApp: App {
         MenuBarExtra {
             MenuContentView()
                 .environment(controller)
+            .onAppear { UpdateChecker.shared.startMonitoring() }
         } label: {
             // L'icône reflète l'état d'un coup d'œil : barrée quand le micro épinglé
             // est débranché, épingle quand le verrouillage est actif.

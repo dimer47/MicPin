@@ -2,6 +2,21 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<!--
+	  Droits requis par le runtime durci, lui-même exigé par la notarisation.
+
+	  Sans eux, l'application est signée et notarisée mais échoue à
+	  l'exécution : la mise à jour ne peut ni vérifier une signature ni monter
+	  le disque téléchargé, sans message d'erreur explicite.
+	-->
+
+	<!-- La mise à jour lance /usr/sbin/spctl, /usr/bin/hdiutil et /bin/bash,
+	     qui appartiennent au système et ne sont pas signés par notre équipe. -->
+	<key>com.apple.security.cs.disable-library-validation</key>
+	<true/>
+
+	<!-- Le bac à sable reste désactivé : lire et modifier les périphériques
+	     audio du système y est impossible. -->
 	<key>com.apple.security.app-sandbox</key>
 	<false/>
 </dict>

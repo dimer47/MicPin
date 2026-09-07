@@ -8,6 +8,7 @@ struct MenuContentView: View {
     @Environment(MicrophoneController.self) private var controller
     @State private var launchesAtLogin = Preferences.shared.launchesAtLogin
     @State private var launchAtLoginFailed = false
+    @State private var automaticUpdates = Preferences.shared.automaticUpdates
 
     var body: some View {
         @Bindable var controller = controller
@@ -126,7 +127,26 @@ struct MenuContentView: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
 
+            Toggle("Rechercher les mises à jour", isOn: $automaticUpdates)
+                .font(.system(size: 12))
+                .toggleStyle(.switch)
+                .controlSize(.mini)
+                .onChange(of: automaticUpdates) { _, newValue in
+                    Preferences.shared.automaticUpdates = newValue
+                    if newValue {
+                        UpdateChecker.shared.startMonitoring()
+                    } else {
+                        UpdateChecker.shared.stopMonitoring()
+                    }
+                }
+
             HStack {
+                Button("Vérifier maintenant") {
+                    Task { await UpdateChecker.shared.check(silently: false) }
+                }
+                .buttonStyle(.glass)
+                .controlSize(.small)
+
                 Spacer()
                 Button("Quitter") {
                     controller.stopObserving()

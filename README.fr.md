@@ -21,10 +21,19 @@ MicPin corrige les deux : il épingle le micro **et** son volume, et les restaur
 - **Épingler un micro** — MicPin surveille les bascules et remet aussitôt le périphérique voulu et son volume.
 - **Léger** — application native SwiftUI, aucun driver audio virtuel, aucune dépendance externe.
 - **Discret** — vit dans la barre des menus, pas d'icône dans le Dock.
+- **À jour** — vérifie une fois par jour s'il existe une nouvelle version, et n'installe que ce qui est signé par l'auteur.
 
 ## Installation
 
-Aucune version compilée n'est distribuée pour l'instant : le projet se construit depuis les sources.
+Téléchargez le disque d'installation depuis la [dernière version publiée](https://github.com/dimer47/MicPin/releases/latest), puis glissez MicPin dans le dossier Applications.
+
+L'application est signée et notarisée par Apple : aucun avertissement de sécurité au premier lancement.
+
+L'emplacement compte : `SMAppService` refuse d'enregistrer le lancement au démarrage pour une app située ailleurs que dans `/Applications`.
+
+**Prérequis** : macOS 26 ou ultérieur.
+
+### Compiler depuis les sources
 
 ```bash
 git clone https://github.com/dimer47/MicPin.git
@@ -32,15 +41,7 @@ cd MicPin
 xcodebuild -project MicPin.xcodeproj -scheme MicPin -configuration Release build
 ```
 
-Copiez ensuite l'app construite dans `/Applications` :
-
-```bash
-cp -R ~/Library/Developer/Xcode/DerivedData/MicPin-*/Build/Products/Release/MicPin.app /Applications/
-```
-
-L'emplacement compte : `SMAppService` refuse d'enregistrer le lancement au démarrage pour une app située ailleurs que dans `/Applications`.
-
-**Prérequis** : macOS 26 ou ultérieur, Xcode 26 pour compiler.
+Xcode 26 est nécessaire. Pour lancer les tests : remplacez `build` par `test`.
 
 ## Utilisation
 
@@ -61,7 +62,7 @@ Trois décisions valent d'être expliquées, parce qu'elles ne sont pas évident
 
 **La persistance se fait par UID, pas par identifiant de périphérique.** L'`AudioObjectID` que CoreAudio attribue à un périphérique change à chaque rebranchement. L'UID, lui, survit aux redémarrages : c'est donc lui qui est mémorisé, ce qui permet à l'épinglage de tenir quand vous débranchez puis rebranchez le micro.
 
-**La reprise en main est bornée.** Si un périphérique refusait obstinément de rester sélectionné, réécrire l'entrée par défaut en boucle ferait tourner l'app indéfiniment contre CoreAudio. MicPin limite les restaurations à cinq par tranche de dix secondes, et lève l'épinglage au-delà plutôt que de s'acharner.
+**La reprise en main est bornée.** Si un périphérique refusait obstinément de rester sélectionné, réécrire l'entrée par défaut en boucle ferait tourner l'app indéfiniment contre CoreAudio. MicPin limite les restaurations à cinq par tranche de dix secondes, puis met la reprise en pause le temps d'une fenêtre. L'épinglage lui-même est conservé : une rafale de notifications, au réveil de veille par exemple, ne doit jamais effacer le réglage de l'utilisateur.
 
 **Le curseur de volume se grise sur certains micros.** Beaucoup de périphériques USB et Bluetooth n'exposent pas `kAudioDevicePropertyVolumeScalar` en écriture : leur gain est géré par le matériel. MicPin détecte le cas et l'explique, plutôt que de laisser un contrôle inerte.
 
@@ -75,8 +76,15 @@ Trois décisions valent d'être expliquées, parce qu'elles ne sont pas évident
 | `Preferences.swift` | Persistance et lancement au démarrage |
 | `MenuContentView.swift` | Le panneau de la barre des menus |
 | `MenuBarIcon.swift` | Fabrication de l'icône de la barre |
+| `UpdateChecker.swift` | Recherche et installation des mises à jour |
 
 L'app n'est pas en bac à sable : lire et modifier les périphériques audio du système l'exige.
+
+## Contribuer
+
+Les tests s'exécutent avec `xcodebuild -project MicPin.xcodeproj -scheme MicPin test`, et à chaque poussée via GitHub Actions.
+
+La procédure de publication est décrite dans [docs/publication.md](docs/publication.md).
 
 ## Licence
 
