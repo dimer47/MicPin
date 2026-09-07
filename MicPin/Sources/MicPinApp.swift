@@ -23,7 +23,22 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var controller: MicrophoneController?
     private var statusItem: StatusItemController?
 
+    /// `true` quand l'application est lancée comme hôte d'une session de tests.
+    ///
+    /// XCTest injecte son bundle dans l'application : `applicationDidFinishLaunching`
+    /// s'exécute donc aussi pendant les tests. Y installer l'élément de barre, un
+    /// minuteur et surtout une requête réseau vers l'API GitHub retarde la
+    /// préparation de la session au point de la faire expirer sur un runner
+    /// (« The test runner timed out while preparing to run tests »). Les tests
+    /// instancient eux-mêmes ce dont ils ont besoin.
+    private var isRunningTests: Bool {
+        NSClassFromString("XCTestCase") != nil
+            || ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
+    }
+
     func applicationDidFinishLaunching(_ notification: Notification) {
+        guard !isRunningTests else { return }
+
         let controller = MicrophoneController()
         let statusItem = StatusItemController(controller: controller)
         statusItem.install()
