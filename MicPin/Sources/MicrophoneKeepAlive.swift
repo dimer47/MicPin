@@ -92,7 +92,15 @@ final class MicrophoneKeepAlive {
 
         // Les tampons reçus ne sont pas conservés : seul le fait de lire le flux
         // compte, il maintient le périphérique éveillé.
-        input.installTap(onBus: 0, bufferSize: 4096, format: format) { _, _ in }
+        //
+        // `@Sendable` n'est pas décoratif : le tap est appelé depuis un thread
+        // temps réel audio, alors que cette classe est `@MainActor`. Sans cette
+        // annotation, la closure hérite de l'isolation principale, et Swift 6
+        // vérifie cette isolation à l'exécution — le processus s'arrête sur un
+        // `EXC_BREAKPOINT` dans `_swift_task_checkIsolatedSwift` dès le premier
+        // tampon reçu.
+        let tap: @Sendable (AVAudioPCMBuffer, AVAudioTime) -> Void = { _, _ in }
+        input.installTap(onBus: 0, bufferSize: 4096, format: format, block: tap)
 
         do {
             try engine.start()

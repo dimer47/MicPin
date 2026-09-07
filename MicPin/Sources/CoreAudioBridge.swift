@@ -87,6 +87,18 @@ enum CoreAudioBridge {
         return ids.compactMap(describe(device:))
     }
 
+    /// Périphériques agrégés créés par CoreAudio pour son usage interne.
+    ///
+    /// Ouvrir un flux d'entrée fait apparaître un « CADefaultDeviceAggregate »
+    /// dans la liste — CoreAudio s'en sert pour router l'audio, et il persiste un
+    /// moment après la fermeture. Ce n'est pas un micro : le proposer au choix de
+    /// l'utilisateur n'aurait aucun sens, et l'épingler le laisserait pointer vers
+    /// un périphérique que le système supprimera.
+    private static func isSystemAggregate(uid: String, name: String) -> Bool {
+        uid.hasPrefix("~:AMS2_Aggregate") || uid.contains("CADefaultDeviceAggregate")
+            || name.hasPrefix("CADefaultDeviceAggregate")
+    }
+
     /// Construit la description d'un périphérique, ou `nil` s'il n'a pas d'entrée.
     private static func describe(device id: AudioObjectID) -> AudioDevice? {
         guard inputChannelCount(of: id) > 0 else { return nil }
@@ -97,6 +109,9 @@ enum CoreAudioBridge {
         }
 
         let name = stringValue(of: id, address: address(kAudioObjectPropertyName)) ?? "Périphérique sans nom"
+
+        guard !isSystemAggregate(uid: uid, name: name) else { return nil }
+
         let transport = value(of: id, address: address(kAudioDevicePropertyTransportType), default: UInt32(0)) ?? 0
         let channel = writableVolumeChannel(of: id)
 

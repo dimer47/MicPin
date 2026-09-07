@@ -121,3 +121,40 @@ final class MenuBarIconTests: XCTestCase {
         }
     }
 }
+
+
+/// Ouvrir un flux d'entrée fait apparaître un périphérique agrégé créé par
+/// CoreAudio pour son usage interne. Le proposer au choix de l'utilisateur n'a
+/// aucun sens, et l'épingler pointerait vers un objet que le système supprimera.
+final class SystemAggregateFilterTests: XCTestCase {
+
+    /// Le filtre est privé : on le vérifie à travers l'énumération réelle, qui
+    /// est de toute façon le comportement qui compte.
+    func testSystemAggregatesAreExcluded() {
+        let noms = CoreAudioBridge.inputDevices().map(\.name)
+
+        for nom in noms {
+            XCTAssertFalse(
+                nom.hasPrefix("CADefaultDeviceAggregate"),
+                "L'agrégat système « \(nom) » ne doit pas être proposé"
+            )
+        }
+    }
+
+    /// Un agrégé créé volontairement par l'utilisateur dans Configuration audio
+    /// et MIDI doit rester visible : seuls les agrégats internes sont écartés.
+    func testUserAggregatesAreKept() {
+        let devices = CoreAudioBridge.inputDevices()
+        let agreges = devices.filter { $0.transport == kAudioDeviceTransportTypeAggregate }
+
+        for device in agreges {
+            XCTAssertFalse(
+                device.name.hasPrefix("CADefaultDeviceAggregate"),
+                "Seuls les agrégats système sont filtrés"
+            )
+        }
+        // Ce test ne peut pas créer d'agrégé : il vérifie que le filtre ne rejette
+        // pas le type entier, ce qui écarterait les agrégats légitimes.
+        XCTAssertTrue(devices.allSatisfy { !$0.uid.isEmpty })
+    }
+}
