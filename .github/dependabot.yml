@@ -1,0 +1,14 @@
+# Surveillance des actions GitHub employées par les workflows.
+#
+# MicPin n'a aucune dépendance externe — ni SPM, ni CocoaPods : le seul élément
+# à tenir à jour est la version des actions, qui finit par être dépréciée.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: "Actions"
+    labels:
+      - dépendances
