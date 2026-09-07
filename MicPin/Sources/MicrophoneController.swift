@@ -3,7 +3,7 @@ import Foundation
 import Observation
 import OSLog
 
-private let log = Logger(subsystem: "fr.iachi.MicPin", category: "Controller")
+private let log = Logger(subsystem: "com.dimer47.MicPin", category: "Controller")
 
 /// État de l'application : liste des entrées, entrée courante, volume, épinglage.
 ///
@@ -27,6 +27,9 @@ final class MicrophoneController {
     /// épinglé afin d'être restaurée lors d'une reprise en main.
     var volume: Float = 0 {
         didSet {
+            // `Slider` réémet la même valeur à chaque évènement souris ; sans ce
+            // garde, chaque frame de glissement provoque une écriture CoreAudio.
+            guard volume != oldValue else { return }
             guard !isSyncingVolume, let device = currentDevice else { return }
             CoreAudioBridge.setInputVolume(volume, on: device)
             if device.uid == pinnedUID {
@@ -54,10 +57,19 @@ final class MicrophoneController {
     ///
     /// Si un périphérique refuse de rester sélectionné, réécrire indéfiniment
     /// l'entrée par défaut ferait tourner l'app en boucle avec CoreAudio. On limite
-    /// donc les tentatives rapprochées, et on abandonne l'épinglage au-delà.
+    /// donc les tentatives rapprochées, et on suspend la reprise en main au-delà.
     private var recentRestorations: [Date] = []
     private let restorationWindow: TimeInterval = 10
     private let maxRestorationsPerWindow = 5
+
+    /// Suspend la reprise en main sans lever l'épinglage.
+    ///
+    /// Distinct de `unpin()`, qui efface la préférence sur disque : un réveil de
+    /// veille ou un dock Thunderbolt qui réénumère ses périphériques produit une
+    /// rafale de notifications capable d'épuiser le quota. Effacer le choix de
+    /// l'utilisateur dans ce cas lui ferait perdre son réglage sans qu'il l'ait
+    /// demandé. La suspension se lève d'elle-même à la fenêtre suivante.
+    private var suspendedUntil: Date?
 
     var currentDevice: AudioDevice? {
         guard let currentDeviceID else { return nil }
@@ -102,16 +114,15 @@ final class MicrophoneController {
     }
 
     private func startObserving() {
+        // `MainActor.assumeIsolated` plutôt que `Task { @MainActor in }` : le bloc
+        // arrive déjà sur la file principale, et un saut supplémentaire retarderait
+        // la reprise en main d'un tour de boucle d'évènements.
         deviceListObservation = CoreAudioBridge.observeDeviceList { [weak self] in
-            Task { @MainActor in
-                self?.handleDeviceListChange()
-            }
+            MainActor.assumeIsolated { self?.handleDeviceListChange() }
         }
 
         defaultInputObservation = CoreAudioBridge.observeDefaultInputDevice { [weak self] in
-            Task { @MainActor in
-                self?.handleDefaultInputChange()
-            }
+            MainActor.assumeIsolated { self?.handleDefaultInputChange() }
         }
     }
 
@@ -125,7 +136,11 @@ final class MicrophoneController {
     }
 
     private func handleDefaultInputChange() {
-        syncCurrentDevice()
+        // Rafraîchir la liste avant d'agir : CoreAudio ne garantit pas l'ordre
+        // entre la notification de bascule et celle de la liste des périphériques.
+        // Sans cela, un débranchement-rebranchement rapide laisse dans `devices`
+        // un AudioObjectID périmé, et la restauration écrit un ID inexistant.
+        refreshDevices()
         enforcePinIfNeeded()
     }
 
@@ -145,10 +160,16 @@ final class MicrophoneController {
     private func syncCurrentDevice() {
         currentDeviceID = CoreAudioBridge.defaultInputDeviceID()
 
-        guard let device = currentDevice else { return }
         isSyncingVolume = true
+        defer { isSyncingVolume = false }
+
+        // Sans périphérique courant, `volume` est remis à zéro plutôt que de
+        // conserver le niveau du micro précédent, qui ne veut plus rien dire.
+        guard let device = currentDevice else {
+            volume = 0
+            return
+        }
         volume = CoreAudioBridge.inputVolume(of: device) ?? 0
-        isSyncingVolume = false
     }
 
     // MARK: - Actions
@@ -157,13 +178,32 @@ final class MicrophoneController {
     ///
     /// Si un épinglage est actif, choisir un autre micro déplace l'épinglage :
     /// sans cela, la sélection serait annulée dans la seconde par la reprise en main.
-    func select(_ device: AudioDevice) {
-        guard CoreAudioBridge.setDefaultInputDevice(device) else { return }
+    ///
+    /// Retourne `false` si CoreAudio a refusé la sélection — le périphérique a pu
+    /// être débranché entre l'affichage du menu et le clic. L'appelant ne doit
+    /// alors pas épingler ce périphérique.
+    @discardableResult
+    func select(_ device: AudioDevice) -> Bool {
+        guard CoreAudioBridge.setDefaultInputDevice(device) else {
+            // La liste est périmée puisqu'elle contient un périphérique injoignable.
+            refreshDevices()
+            return false
+        }
 
         if isPinned {
             pin(device)
         }
         syncCurrentDevice()
+        return true
+    }
+
+    /// Sélectionne un périphérique et l'épingle, en une seule action.
+    ///
+    /// L'épinglage n'a lieu que si la sélection a réussi : épingler un
+    /// périphérique injoignable enregistrerait le volume d'un autre micro.
+    func selectAndPin(_ device: AudioDevice) {
+        guard select(device) else { return }
+        pin(device)
     }
 
     /// Épingle un périphérique : il sera restauré à chaque bascule de macOS.
@@ -201,6 +241,12 @@ final class MicrophoneController {
     private func enforcePinIfNeeded() {
         guard let pinnedUID else { return }
 
+        if let suspendedUntil {
+            guard Date() >= suspendedUntil else { return }
+            self.suspendedUntil = nil
+            recentRestorations.removeAll()
+        }
+
         guard let target = devices.first(where: { $0.uid == pinnedUID }) else {
             // Le micro épinglé est absent : on ne force rien, on garde l'épinglage
             // en mémoire pour le rebranchement.
@@ -217,9 +263,12 @@ final class MicrophoneController {
 
         guard !deviceIsCorrect || !volumeIsCorrect else { return }
 
-        guard allowRestoration() else {
-            log.error("Trop de reprises en main rapprochées, épinglage suspendu")
-            unpin()
+        // Le quota ne s'applique qu'aux bascules de périphérique : réécrire un
+        // volume est sans risque de boucle une fois la valeur appliquée mémorisée.
+        guard deviceIsCorrect || allowRestoration() else {
+            // L'épinglage est conservé : seule la reprise en main est mise en pause.
+            suspendedUntil = Date().addingTimeInterval(restorationWindow)
+            log.error("Trop de reprises en main rapprochées, reprise suspendue \(self.restorationWindow, format: .fixed(precision: 0)) s")
             return
         }
 
@@ -230,6 +279,14 @@ final class MicrophoneController {
 
         if let restoredVolume, !volumeIsCorrect {
             CoreAudioBridge.setInputVolume(restoredVolume, on: target)
+
+            // Mémoriser la valeur réellement appliquée, et non celle demandée :
+            // certains micros quantifient leur gain (0,42 demandé, 0,375 obtenu).
+            // Sans cela la comparaison ne converge jamais, chaque notification
+            // réécrit le volume et finit par épuiser le quota de reprises.
+            if let applied = CoreAudioBridge.inputVolume(of: target) {
+                preferences.pinnedVolume = applied
+            }
         }
 
         lastRestoration = Date()

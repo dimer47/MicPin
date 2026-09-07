@@ -2,7 +2,7 @@ import Foundation
 import OSLog
 import ServiceManagement
 
-private let log = Logger(subsystem: "fr.iachi.MicPin", category: "Preferences")
+private let log = Logger(subsystem: "com.dimer47.MicPin", category: "Preferences")
 
 /// Réglages persistés entre les lancements.
 ///

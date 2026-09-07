@@ -68,7 +68,7 @@ struct MenuContentView: View {
             return "Micro épinglé débranché"
         }
         if controller.isPinned {
-            return "Épinglé — restauré automatiquement"
+            return "Épinglé — restauration auto"
         }
         return "Suit les changements de macOS"
     }
@@ -94,8 +94,7 @@ struct MenuContentView: View {
                             if device.uid == controller.pinnedUID {
                                 controller.unpin()
                             } else {
-                                controller.select(device)
-                                controller.pin(device)
+                                controller.selectAndPin(device)
                             }
                         }
                     )

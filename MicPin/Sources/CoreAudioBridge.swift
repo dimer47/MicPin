@@ -2,7 +2,7 @@ import CoreAudio
 import Foundation
 import OSLog
 
-private let log = Logger(subsystem: "fr.iachi.MicPin", category: "CoreAudio")
+private let log = Logger(subsystem: "com.dimer47.MicPin", category: "CoreAudio")
 
 /// Accès bas niveau à CoreAudio : énumération des entrées, lecture et écriture
 /// du périphérique d'entrée par défaut et de son volume.
@@ -43,8 +43,9 @@ enum CoreAudioBridge {
 
     /// Lit une propriété de type CFString (nom, UID) et la convertit en `String`.
     ///
-    /// CoreAudio renvoie ici une référence détenue par l'appelant, d'où le
-    /// `takeRetainedValue` : la chaîne est libérée avec la valeur Swift retournée.
+    /// CoreAudio écrit ici une référence dont l'appelant devient propriétaire ; le
+    /// pont Swift-CoreFoundation s'en charge et libère la chaîne avec la valeur
+    /// retournée.
     private static func stringValue(
         of object: AudioObjectID,
         address: AudioObjectPropertyAddress
@@ -260,9 +261,10 @@ enum CoreAudioBridge {
         handler: @escaping @Sendable () -> Void
     ) -> Observation? {
         var addr = address(selector)
-        let block: AudioObjectPropertyListenerBlock = { _, _ in
-            DispatchQueue.main.async(execute: handler)
-        }
+        // Pas de `DispatchQueue.main.async` ici : la file passée à
+        // `AudioObjectAddPropertyListenerBlock` livre déjà le bloc sur la file
+        // principale, un second saut ne ferait qu'ajouter de la latence.
+        let block: AudioObjectPropertyListenerBlock = { _, _ in handler() }
 
         let status = AudioObjectAddPropertyListenerBlock(object, &addr, DispatchQueue.main, block)
         guard status == noErr else {
