@@ -10,6 +10,16 @@
 	  le disque téléchargé, sans message d'erreur explicite.
 	-->
 
+	<!-- Accès au micro pour le maintien éveillé.
+
+	     Sous runtime durci, TCC refuse l'accès sans cet entitlement et
+	     n'affiche même aucune demande d'autorisation : le journal indique
+	     « requires entitlement com.apple.security.device.audio-input but it
+	     is missing ». La clé NSMicrophoneUsageDescription de l'Info.plist ne
+	     suffit pas à elle seule. -->
+	<key>com.apple.security.device.audio-input</key>
+	<true/>
+
 	<!-- La mise à jour lance /usr/sbin/spctl, /usr/bin/hdiutil et /bin/bash,
 	     qui appartiennent au système et ne sont pas signés par notre équipe. -->
 	<key>com.apple.security.cs.disable-library-validation</key>
