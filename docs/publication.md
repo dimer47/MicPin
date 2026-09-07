@@ -14,7 +14,7 @@ il n'y a rien à modifier dans le projet au préalable.
 
 ## Réglage initial des secrets
 
-Trois secrets sont à enregistrer une seule fois sur le dépôt. Sans eux, le
+Quatre secrets sont à enregistrer une seule fois sur le dépôt. Sans eux, le
 workflow s'arrête avec un message explicite.
 
 ### 1. Le certificat Developer ID
@@ -44,10 +44,23 @@ Connexion et sécurité → Mots de passe des apps.
 gh secret set NOTARISATION_MOT_DE_PASSE --repo dimer47/MicPin
 ```
 
-### 3. Vérifier l'identifiant d'équipe
+### 3. L'identifiant du compte Apple
 
-Le workflow et le vérificateur de mise à jour attendent tous deux l'équipe
-`5D6QHL72QC`. Si le compte développeur change, il faut modifier `EQUIPE_APPLE`
+L'adresse du compte développeur, employée par `notarytool`. Elle est enregistrée en
+secret plutôt qu'écrite dans le workflow : le dépôt est public, et une adresse en clair
+dans un fichier versionné finit récoltée.
+
+```bash
+gh secret set IDENTIFIANT_APPLE --repo dimer47/MicPin
+```
+
+### 4. Vérifier l'identifiant d'équipe
+
+L'identifiant d'équipe, lui, reste en clair dans le workflow : il est de toute façon
+lisible dans la signature de tout binaire distribué (`codesign -dv`), et le vérificateur
+de mise à jour doit le connaître pour refuser un disque signé par un tiers.
+
+Le workflow et le vérificateur attendent tous deux l'équipe `5D6QHL72QC`. Si le compte développeur change, il faut modifier `EQUIPE_APPLE`
 dans `.github/workflows/release.yml` **et** `expectedTeamID` dans
 `MicPin/Sources/UpdateChecker.swift` — sans quoi les mises à jour seront
 refusées comme non signées par l'auteur.

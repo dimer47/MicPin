@@ -9,6 +9,10 @@ name: Publication
 #   CERTIFICAT_P12_BASE64      certificat Developer ID exporté, encodé en base64
 #   CERTIFICAT_MOT_DE_PASSE    mot de passe de ce fichier .p12
 #   NOTARISATION_MOT_DE_PASSE  mot de passe d'application Apple
+#   IDENTIFIANT_APPLE          adresse du compte développeur Apple
+#
+# L'identifiant Apple est un secret plutôt qu'une variable : le dépôt est
+# public, et une adresse en clair dans un fichier versionné finit récoltée.
 
 on:
   push:
@@ -20,8 +24,10 @@ on:
         required: true
 
 env:
+  # L'identifiant d'équipe reste en clair : il est de toute façon lisible dans
+  # la signature de tout binaire distribué (codesign -dv), et le vérificateur
+  # de mise à jour doit le connaître pour refuser un disque signé par un tiers.
   EQUIPE_APPLE: 5D6QHL72QC
-  IDENTIFIANT_APPLE: iachi.dimitri@gmail.com
 
 jobs:
   publier:
@@ -108,7 +114,7 @@ jobs:
           NOTARISATION_MOT_DE_PASSE: ${{ secrets.NOTARISATION_MOT_DE_PASSE }}
         run: |
           xcrun notarytool store-credentials "micpin" \
-            --apple-id "$IDENTIFIANT_APPLE" \
+            --apple-id "${{ secrets.IDENTIFIANT_APPLE }}" \
             --team-id "$EQUIPE_APPLE" \
             --password "$NOTARISATION_MOT_DE_PASSE"
 
