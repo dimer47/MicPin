@@ -1,0 +1,269 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		ECDB827FEF8649C18CE94B39 /* MicPinApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 820779434F354074BE4AED50 /* MicPinApp.swift */; };
+		0392C0A518C84132A0BC5901 /* MicrophoneController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA11C6D84B37459480F891D2 /* MicrophoneController.swift */; };
+		D6D96A555BEC49999DEE537B /* CoreAudioBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FE71E176CE243008F1FC8A3 /* CoreAudioBridge.swift */; };
+		A49BF26A5B14486CB9984F5C /* AudioDevice.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3240D490618C4D76BF213DA2 /* AudioDevice.swift */; };
+		1B5E0C00F0CF45839B505A5F /* Preferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA7C8DAE16C9441BABC35F34 /* Preferences.swift */; };
+		CE43E6FDD5D14A78924461C0 /* MenuContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73BD867822804A61830D60CE /* MenuContentView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		F85B3FEE74454595BA9CD28C /* MicPin.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MicPin.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		0ABB303DFF224246AB5971AA /* MicPin.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MicPin.entitlements; sourceTree = "<group>"; };
+		43100C464DF94DB3832E3C6E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		820779434F354074BE4AED50 /* MicPinApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MicPinApp.swift; sourceTree = "<group>"; };
+		CA11C6D84B37459480F891D2 /* MicrophoneController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MicrophoneController.swift; sourceTree = "<group>"; };
+		7FE71E176CE243008F1FC8A3 /* CoreAudioBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreAudioBridge.swift; sourceTree = "<group>"; };
+		3240D490618C4D76BF213DA2 /* AudioDevice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioDevice.swift; sourceTree = "<group>"; };
+		CA7C8DAE16C9441BABC35F34 /* Preferences.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Preferences.swift; sourceTree = "<group>"; };
+		73BD867822804A61830D60CE /* MenuContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuContentView.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		ECADEF33474F4D9EBB9718A4 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		E63C31FF1B0C4E0898C70483 = {
+			isa = PBXGroup;
+			children = (
+				7F904FA4FAD14E04A50FA598 /* MicPin */,
+				AD019F1CE1824528A534849C /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		7F904FA4FAD14E04A50FA598 /* MicPin */ = {
+			isa = PBXGroup;
+			children = (
+				6C0B21411CFE4B8689172289 /* Sources */,
+				43100C464DF94DB3832E3C6E /* Info.plist */,
+				0ABB303DFF224246AB5971AA /* MicPin.entitlements */,
+			);
+			path = MicPin;
+			sourceTree = "<group>";
+		};
+		6C0B21411CFE4B8689172289 /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				820779434F354074BE4AED50 /* MicPinApp.swift */,
+				CA11C6D84B37459480F891D2 /* MicrophoneController.swift */,
+				7FE71E176CE243008F1FC8A3 /* CoreAudioBridge.swift */,
+				3240D490618C4D76BF213DA2 /* AudioDevice.swift */,
+				CA7C8DAE16C9441BABC35F34 /* Preferences.swift */,
+				73BD867822804A61830D60CE /* MenuContentView.swift */,
+			);
+			path = Sources;
+			sourceTree = "<group>";
+		};
+		AD019F1CE1824528A534849C /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				F85B3FEE74454595BA9CD28C /* MicPin.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		BE9697C155BA42BBB4A2C55A /* MicPin */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 6C5D4BBF69474AC1942A104E /* Build configuration list for PBXNativeTarget "MicPin" */;
+			buildPhases = (
+				1757F62F648E45C2AD59E38A /* Sources */,
+				ECADEF33474F4D9EBB9718A4 /* Frameworks */,
+				6E6C816ED4EB427383AC999F /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = MicPin;
+			productName = MicPin;
+			productReference = F85B3FEE74454595BA9CD28C /* MicPin.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		F8DD9E73079B44819C711770 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2660;
+				LastUpgradeCheck = 2660;
+				TargetAttributes = {
+					BE9697C155BA42BBB4A2C55A = {
+						CreatedOnToolsVersion = 26.6;
+					};
+				};
+			};
+			buildConfigurationList = A6B6455888304E8DBA1FA405 /* Build configuration list for PBXProject "MicPin" */;
+			compatibilityVersion = "Xcode 15.0";
+			developmentRegion = fr;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				fr,
+				Base,
+			);
+			mainGroup = E63C31FF1B0C4E0898C70483;
+			productRefGroup = AD019F1CE1824528A534849C /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				BE9697C155BA42BBB4A2C55A /* MicPin */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		6E6C816ED4EB427383AC999F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		1757F62F648E45C2AD59E38A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				ECDB827FEF8649C18CE94B39 /* MicPinApp.swift in Sources */,
+				0392C0A518C84132A0BC5901 /* MicrophoneController.swift in Sources */,
+				D6D96A555BEC49999DEE537B /* CoreAudioBridge.swift in Sources */,
+				A49BF26A5B14486CB9984F5C /* AudioDevice.swift in Sources */,
+				1B5E0C00F0CF45839B505A5F /* Preferences.swift in Sources */,
+				CE43E6FDD5D14A78924461C0 /* MenuContentView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		05DFBE16335A43418974288C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		EEA7D2CDC5D64CB48161ACD9 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+		C40860FC07174D2DB18ED63F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = MicPin/MicPin.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = MicPin/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = fr.iachi.MicPin;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		574AB1DF103F4F97A455C35C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = MicPin/MicPin.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = MicPin/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = fr.iachi.MicPin;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		A6B6455888304E8DBA1FA405 /* Build configuration list for PBXProject "MicPin" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				05DFBE16335A43418974288C /* Debug */,
+				EEA7D2CDC5D64CB48161ACD9 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		6C5D4BBF69474AC1942A104E /* Build configuration list for PBXNativeTarget "MicPin" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C40860FC07174D2DB18ED63F /* Debug */,
+				574AB1DF103F4F97A455C35C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = F8DD9E73079B44819C711770 /* Project object */;
+}
