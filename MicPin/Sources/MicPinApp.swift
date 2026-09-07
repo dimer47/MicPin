@@ -11,7 +11,11 @@ struct MicPinApp: App {
         } label: {
             // L'icône reflète l'état d'un coup d'œil : barrée quand le micro épinglé
             // est débranché, épingle quand le verrouillage est actif.
-            Image(systemName: menuBarSymbol)
+            //
+            // Passe par `MenuBarIcon` plutôt que par `Image(systemName:)` : la marge
+            // latérale doit être dessinée dans le bitmap, le label d'un
+            // `MenuBarExtra` ignorant les modificateurs de disposition.
+            Image(nsImage: MenuBarIcon.image(symbolName: menuBarSymbol))
         }
         // Style fenêtre, et non menu : un menu natif n'accepte ni curseur ni
         // matériaux Liquid Glass.

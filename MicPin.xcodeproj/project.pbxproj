@@ -13,6 +13,8 @@
 		A49BF26A5B14486CB9984F5C /* AudioDevice.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3240D490618C4D76BF213DA2 /* AudioDevice.swift */; };
 		1B5E0C00F0CF45839B505A5F /* Preferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA7C8DAE16C9441BABC35F34 /* Preferences.swift */; };
 		CE43E6FDD5D14A78924461C0 /* MenuContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73BD867822804A61830D60CE /* MenuContentView.swift */; };
+		5C31A97F301D4EE4BC240439 /* MenuBarIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F5AFD879C9F457EB6DADF77 /* MenuBarIcon.swift */; };
+		4F487714800B423E898B57C1 /* AppIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = 8C83BC14627943DC8B1C9F94 /* AppIcon.icns */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -25,6 +27,8 @@
 		3240D490618C4D76BF213DA2 /* AudioDevice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioDevice.swift; sourceTree = "<group>"; };
 		CA7C8DAE16C9441BABC35F34 /* Preferences.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Preferences.swift; sourceTree = "<group>"; };
 		73BD867822804A61830D60CE /* MenuContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuContentView.swift; sourceTree = "<group>"; };
+		4F5AFD879C9F457EB6DADF77 /* MenuBarIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarIcon.swift; sourceTree = "<group>"; };
+		8C83BC14627943DC8B1C9F94 /* AppIcon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = AppIcon.icns; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -50,6 +54,7 @@
 			isa = PBXGroup;
 			children = (
 				6C0B21411CFE4B8689172289 /* Sources */,
+				94B161743DE54B72864EADCC /* Resources */,
 				43100C464DF94DB3832E3C6E /* Info.plist */,
 				0ABB303DFF224246AB5971AA /* MicPin.entitlements */,
 			);
@@ -59,6 +64,7 @@
 		6C0B21411CFE4B8689172289 /* Sources */ = {
 			isa = PBXGroup;
 			children = (
+				4F5AFD879C9F457EB6DADF77 /* MenuBarIcon.swift */,
 				820779434F354074BE4AED50 /* MicPinApp.swift */,
 				CA11C6D84B37459480F891D2 /* MicrophoneController.swift */,
 				7FE71E176CE243008F1FC8A3 /* CoreAudioBridge.swift */,
@@ -75,6 +81,14 @@
 				F85B3FEE74454595BA9CD28C /* MicPin.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		94B161743DE54B72864EADCC /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				8C83BC14627943DC8B1C9F94 /* AppIcon.icns */,
+			);
+			path = Resources;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -135,6 +149,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4F487714800B423E898B57C1 /* AppIcon.icns in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -145,6 +160,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5C31A97F301D4EE4BC240439 /* MenuBarIcon.swift in Sources */,
 				ECDB827FEF8649C18CE94B39 /* MicPinApp.swift in Sources */,
 				0392C0A518C84132A0BC5901 /* MicrophoneController.swift in Sources */,
 				D6D96A555BEC49999DEE537B /* CoreAudioBridge.swift in Sources */,
