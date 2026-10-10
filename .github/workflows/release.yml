@@ -6,10 +6,10 @@ name: Publication
 #
 # Trois secrets sont nécessaires (voir docs/publication.md) :
 #
-#   CERTIFICAT_P12_BASE64      certificat Developer ID exporté, encodé en base64
-#   CERTIFICAT_MOT_DE_PASSE    mot de passe de ce fichier .p12
-#   NOTARISATION_MOT_DE_PASSE  mot de passe d'application Apple
-#   IDENTIFIANT_APPLE          adresse du compte développeur Apple
+#   MAC_CERT_P12                 certificat Developer ID exporté, encodé en base64
+#   MAC_CERT_PASSWORD            mot de passe de ce fichier .p12
+#   APPLE_APP_SPECIFIC_PASSWORD  mot de passe d'application Apple
+#   APPLE_ID                     adresse du compte développeur Apple
 #
 # L'identifiant Apple est un secret plutôt qu'une variable : le dépôt est
 # public, et une adresse en clair dans un fichier versionné finit récoltée.
@@ -44,26 +44,26 @@ jobs:
       # exécution : il disparaît avec la machine virtuelle.
       - name: Importer le certificat de signature
         env:
-          CERTIFICAT_P12_BASE64: ${{ secrets.CERTIFICAT_P12_BASE64 }}
-          CERTIFICAT_MOT_DE_PASSE: ${{ secrets.CERTIFICAT_MOT_DE_PASSE }}
+          MAC_CERT_P12: ${{ secrets.MAC_CERT_P12 }}
+          MAC_CERT_PASSWORD: ${{ secrets.MAC_CERT_PASSWORD }}
         run: |
           TROUSSEAU="$RUNNER_TEMP/signature.keychain-db"
           MOT_DE_PASSE_TROUSSEAU="$(uuidgen)"
           CERTIFICAT="$RUNNER_TEMP/certificat.p12"
 
-          if [ -z "$CERTIFICAT_P12_BASE64" ]; then
-            echo "::error::Le secret CERTIFICAT_P12_BASE64 est vide. Enregistrez-le depuis un fichier : gh secret set CERTIFICAT_P12_BASE64 --repo … < cert.b64"
+          if [ -z "$MAC_CERT_P12" ]; then
+            echo "::error::Le secret MAC_CERT_P12 est vide. Enregistrez-le depuis un fichier : gh secret set MAC_CERT_P12 --repo … < cert.b64"
             exit 1
           fi
 
-          if [ -z "$CERTIFICAT_MOT_DE_PASSE" ]; then
-            echo "::error::Le secret CERTIFICAT_MOT_DE_PASSE est vide. Un .p12 exporté sans mot de passe ne peut pas être importé par macOS : réexportez le certificat en en choisissant un."
+          if [ -z "$MAC_CERT_PASSWORD" ]; then
+            echo "::error::Le secret MAC_CERT_PASSWORD est vide. Un .p12 exporté sans mot de passe ne peut pas être importé par macOS : réexportez le certificat en en choisissant un."
             exit 1
           fi
 
           # tr supprime les retours ligne éventuels : certains outils de copie en
           # introduisent, et le décodage échouerait sans message clair.
-          echo "$CERTIFICAT_P12_BASE64" | tr -d '\n\r ' | base64 --decode > "$CERTIFICAT"
+          echo "$MAC_CERT_P12" | tr -d '\n\r ' | base64 --decode > "$CERTIFICAT"
 
           TAILLE="$(wc -c < "$CERTIFICAT" | tr -d ' ')"
           echo "Certificat décodé : $TAILLE octets"
@@ -81,7 +81,7 @@ jobs:
           # parameters » peu explicite.
           security import "$CERTIFICAT" \
             -k "$TROUSSEAU" \
-            -P "$CERTIFICAT_MOT_DE_PASSE" \
+            -P "$MAC_CERT_PASSWORD" \
             -f pkcs12 \
             -A \
             -T /usr/bin/codesign \
@@ -111,12 +111,12 @@ jobs:
 
       - name: Enregistrer les identifiants de notarisation
         env:
-          NOTARISATION_MOT_DE_PASSE: ${{ secrets.NOTARISATION_MOT_DE_PASSE }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
         run: |
           xcrun notarytool store-credentials "micpin" \
-            --apple-id "${{ secrets.IDENTIFIANT_APPLE }}" \
+            --apple-id "${{ secrets.APPLE_ID }}" \
             --team-id "$EQUIPE_APPLE" \
-            --password "$NOTARISATION_MOT_DE_PASSE"
+            --password "$APPLE_APP_SPECIFIC_PASSWORD"
 
       - name: Déterminer la version
         run: |
