@@ -26,8 +26,8 @@ runner.
 
 ```bash
 base64 -i certificat.p12 -o certificat.b64
-gh secret set CERTIFICAT_P12_BASE64 --repo dimer47/MicPin < certificat.b64
-gh secret set CERTIFICAT_MOT_DE_PASSE --repo dimer47/MicPin
+gh secret set MAC_CERT_P12 --repo dimer47/MicPin < certificat.b64
+gh secret set MAC_CERT_PASSWORD --repo dimer47/MicPin
 rm certificat.p12 certificat.b64
 ```
 
@@ -41,7 +41,7 @@ d'application** créé sur [appleid.apple.com](https://appleid.apple.com) →
 Connexion et sécurité → Mots de passe des apps.
 
 ```bash
-gh secret set NOTARISATION_MOT_DE_PASSE --repo dimer47/MicPin
+gh secret set APPLE_APP_SPECIFIC_PASSWORD --repo dimer47/MicPin
 ```
 
 ### 3. L'identifiant du compte Apple
@@ -51,7 +51,7 @@ secret plutôt qu'écrite dans le workflow : le dépôt est public, et une adres
 dans un fichier versionné finit récoltée.
 
 ```bash
-gh secret set IDENTIFIANT_APPLE --repo dimer47/MicPin
+gh secret set APPLE_ID --repo dimer47/MicPin
 ```
 
 ### 4. Vérifier l'identifiant d'équipe
@@ -98,7 +98,7 @@ fréquents :
 
 | Message | Cause |
 |---|---|
-| `Le secret CERTIFICAT_P12_BASE64 est vide` | Le secret n'est pas enregistré sur le dépôt |
+| `Le secret MAC_CERT_P12 est vide` | Le secret n'est pas enregistré sur le dépôt |
 | `Le certificat décodé fait N octets` | Le base64 est tronqué : réexportez et réenregistrez |
 | `Aucun certificat Developer ID trouvé` | Le `.p12` ne contient pas de certificat *Developer ID Application* |
 | `L'application se déclare en X alors que le tag annonce Y` | `Info.plist` n'a pas été mis à jour, signe d'un problème de workflow |
