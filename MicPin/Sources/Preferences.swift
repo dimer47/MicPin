@@ -13,9 +13,22 @@ final class Preferences: Sendable {
     static let shared = Preferences()
 
     private enum Key {
-        static let pinnedUID = "pinnedDeviceUID"
-        static let pinnedVolume = "pinnedDeviceVolume"
+        // Clés historiques de l'entrée, conservées telles quelles pour ne pas
+        // perdre l'épinglage des utilisateurs déjà installés.
+        static let pinnedInputUID = "pinnedDeviceUID"
+        static let pinnedInputVolume = "pinnedDeviceVolume"
+        // Clés de la sortie, introduites avec la gestion du son sortant.
+        static let pinnedOutputUID = "pinnedOutputDeviceUID"
+        static let pinnedOutputVolume = "pinnedOutputDeviceVolume"
         static let updatesDisabled = "automaticUpdatesDisabled"
+
+        static func uid(for scope: AudioScope) -> String {
+            scope == .output ? pinnedOutputUID : pinnedInputUID
+        }
+
+        static func volume(for scope: AudioScope) -> String {
+            scope == .output ? pinnedOutputVolume : pinnedInputVolume
+        }
     }
 
     /// `nonisolated(unsafe)` : `UserDefaults` est thread-safe d'après sa
@@ -26,30 +39,45 @@ final class Preferences: Sendable {
         self.defaults = defaults
     }
 
-    /// UID du micro épinglé. L'UID, et non l'AudioObjectID, car ce dernier change
-    /// à chaque rebranchement.
-    var pinnedUID: String? {
-        get { defaults.string(forKey: Key.pinnedUID) }
-        set { defaults.set(newValue, forKey: Key.pinnedUID) }
+    /// UID du périphérique épinglé dans ce sens. L'UID, et non l'AudioObjectID, car
+    /// ce dernier change à chaque rebranchement.
+    func pinnedDeviceUID(for scope: AudioScope) -> String? {
+        defaults.string(forKey: Key.uid(for: scope))
     }
 
-    /// Volume à restaurer avec le micro épinglé, entre 0 et 1.
+    func setPinnedUID(_ uid: String?, for scope: AudioScope) {
+        defaults.set(uid, forKey: Key.uid(for: scope))
+    }
+
+    /// Volume à restaurer avec le périphérique épinglé dans ce sens, entre 0 et 1.
     ///
     /// Distinct de « pas de valeur » : un volume nul est un réglage valide, alors
     /// qu'une absence de valeur signifie qu'aucun volume n'a encore été mémorisé et
     /// qu'il ne faut donc rien restaurer.
+    func pinnedDeviceVolume(for scope: AudioScope) -> Float? {
+        let key = Key.volume(for: scope)
+        guard defaults.object(forKey: key) != nil else { return nil }
+        return defaults.float(forKey: key)
+    }
+
+    func setPinnedVolume(_ volume: Float?, for scope: AudioScope) {
+        let key = Key.volume(for: scope)
+        if let volume {
+            defaults.set(volume, forKey: key)
+        } else {
+            defaults.removeObject(forKey: key)
+        }
+    }
+
+    // Raccourcis sur l'entrée, pour les appelants et les tests qui ne gèrent qu'elle.
+    var pinnedUID: String? {
+        get { pinnedDeviceUID(for: .input) }
+        set { setPinnedUID(newValue, for: .input) }
+    }
+
     var pinnedVolume: Float? {
-        get {
-            guard defaults.object(forKey: Key.pinnedVolume) != nil else { return nil }
-            return defaults.float(forKey: Key.pinnedVolume)
-        }
-        set {
-            if let newValue {
-                defaults.set(newValue, forKey: Key.pinnedVolume)
-            } else {
-                defaults.removeObject(forKey: Key.pinnedVolume)
-            }
-        }
+        get { pinnedDeviceVolume(for: .input) }
+        set { setPinnedVolume(newValue, for: .input) }
     }
 
     /// Vérification quotidienne des mises à jour.

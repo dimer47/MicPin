@@ -6,12 +6,13 @@ import XCTest
 /// micro : c'est ce qui permet de distinguer deux périphériques de même nom.
 final class AudioDeviceTests: XCTestCase {
 
-    private func device(transport: UInt32, name: String = "Micro") -> AudioDevice {
+    private func device(transport: UInt32, name: String = "Micro", scope: AudioScope = .input) -> AudioDevice {
         AudioDevice(
             id: 1,
             uid: "uid",
             name: name,
             transport: transport,
+            scope: scope,
             hasVolumeControl: true,
             volumeChannel: 0
         )
@@ -56,12 +57,23 @@ final class AudioDeviceTests: XCTestCase {
         ]
 
         for transport in transports {
-            let name = device(transport: transport).symbolName
-            XCTAssertNotNil(
-                NSImage(systemSymbolName: name, accessibilityDescription: nil),
-                "Le symbole « \(name) » n'existe pas dans SF Symbols"
-            )
+            for scope in [AudioScope.input, .output] {
+                let name = device(transport: transport, scope: scope).symbolName
+                XCTAssertNotNil(
+                    NSImage(systemSymbolName: name, accessibilityDescription: nil),
+                    "Le symbole « \(name) » n'existe pas dans SF Symbols"
+                )
+            }
         }
+    }
+
+    /// Le périphérique intégré et le périphérique générique changent d'icône selon
+    /// le sens : haut-parleur en sortie, micro ou laptop en entrée.
+    func testOutputUsesSpeakerSymbols() {
+        XCTAssertEqual(device(transport: 0x7A7A7A7A, scope: .output).symbolName, "speaker.wave.2")
+        XCTAssertEqual(device(transport: 0x7A7A7A7A, scope: .input).symbolName, "mic")
+        XCTAssertEqual(device(transport: kAudioDeviceTransportTypeBuiltIn, scope: .output).symbolName, "speaker.wave.2.fill")
+        XCTAssertEqual(device(transport: kAudioDeviceTransportTypeBuiltIn, scope: .input).symbolName, "laptopcomputer")
     }
 
     /// L'identité repose sur l'UID : deux périphériques d'UID différents ne sont
@@ -73,7 +85,7 @@ final class AudioDeviceTests: XCTestCase {
 
         b = AudioDevice(id: 1, uid: "autre", name: "Micro",
                         transport: kAudioDeviceTransportTypeUSB,
-                        hasVolumeControl: true, volumeChannel: 0)
+                        scope: .input, hasVolumeControl: true, volumeChannel: 0)
         XCTAssertNotEqual(a, b)
     }
 }

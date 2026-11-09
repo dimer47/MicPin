@@ -20,7 +20,8 @@ struct MicPinApp: App {
 
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
-    private var controller: MicrophoneController?
+    private var input: AudioDeviceController?
+    private var output: AudioDeviceController?
     private var statusItem: StatusItemController?
 
     /// `true` quand l'application est lancée comme hôte d'une session de tests.
@@ -39,11 +40,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         guard !isRunningTests else { return }
 
-        let controller = MicrophoneController()
-        let statusItem = StatusItemController(controller: controller)
+        let input = AudioDeviceController(scope: .input)
+        let output = AudioDeviceController(scope: .output)
+        let statusItem = StatusItemController(input: input, output: output)
         statusItem.install()
 
-        self.controller = controller
+        self.input = input
+        self.output = output
         self.statusItem = statusItem
 
         UpdateChecker.shared.startMonitoring()
@@ -52,8 +55,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationWillTerminate(_ notification: Notification) {
         // Libérer le flux d'entrée avant de partir : sans cela, le voyant orange
         // de micro peut rester allumé jusqu'à ce que macOS fasse le ménage.
-        controller?.keepAlive.deactivate()
-        controller?.stopObserving()
+        input?.keepAlive?.deactivate()
+        input?.stopObserving()
+        output?.stopObserving()
         statusItem?.uninstall()
     }
 }
