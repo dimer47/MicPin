@@ -13,13 +13,13 @@ final class MicrophoneControllerTests: XCTestCase {
 
     private var suiteName: String!
     private var preferences: Preferences!
-    private var controller: MicrophoneController!
+    private var controller: AudioDeviceController!
 
     override func setUp() async throws {
         try await super.setUp()
         suiteName = "com.dimer47.MicPin.tests.\(UUID().uuidString)"
         preferences = Preferences(defaults: UserDefaults(suiteName: suiteName)!)
-        controller = MicrophoneController(preferences: preferences)
+        controller = AudioDeviceController(scope: .input, preferences: preferences)
     }
 
     override func tearDown() async throws {
@@ -90,7 +90,7 @@ final class MicrophoneControllerTests: XCTestCase {
         controller.pin(device)
         controller.stopObserving()
 
-        let reborn = MicrophoneController(preferences: preferences)
+        let reborn = AudioDeviceController(scope: .input, preferences: preferences)
         defer { reborn.stopObserving() }
 
         XCTAssertTrue(reborn.isPinned)
@@ -101,7 +101,7 @@ final class MicrophoneControllerTests: XCTestCase {
     /// l'épinglage : il reprendra effet au rebranchement.
     func testMissingPinnedDeviceKeepsThePin() {
         preferences.pinnedUID = "périphérique-qui-n-existe-pas"
-        let controller = MicrophoneController(preferences: preferences)
+        let controller = AudioDeviceController(scope: .input, preferences: preferences)
         defer { controller.stopObserving() }
 
         XCTAssertTrue(controller.isPinned, "L'épinglage est conservé")
@@ -161,6 +161,7 @@ final class MicrophoneControllerTests: XCTestCase {
             uid: "fantôme",
             name: "Périphérique inexistant",
             transport: kAudioDeviceTransportTypeUSB,
+            scope: .input,
             hasVolumeControl: false,
             volumeChannel: 0
         )
@@ -178,6 +179,7 @@ final class MicrophoneControllerTests: XCTestCase {
             uid: "fantôme",
             name: "Périphérique inexistant",
             transport: kAudioDeviceTransportTypeUSB,
+            scope: .input,
             hasVolumeControl: false,
             volumeChannel: 0
         )

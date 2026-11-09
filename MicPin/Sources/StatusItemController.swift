@@ -13,15 +13,17 @@ import SwiftUI
 @MainActor
 final class StatusItemController: NSObject {
 
-    private let controller: MicrophoneController
+    private let input: AudioDeviceController
+    private let output: AudioDeviceController
     private var statusItem: NSStatusItem?
     private let popover = NSPopover()
 
     /// Observation de l'état, pour tenir l'icône à jour.
     private var iconRefreshTimer: Timer?
 
-    init(controller: MicrophoneController) {
-        self.controller = controller
+    init(input: AudioDeviceController, output: AudioDeviceController) {
+        self.input = input
+        self.output = output
         super.init()
     }
 
@@ -41,7 +43,7 @@ final class StatusItemController: NSObject {
 
         popover.behavior = .transient
         popover.contentViewController = NSHostingController(
-            rootView: MenuContentView().environment(controller)
+            rootView: MenuContentView(input: input, output: output)
         )
 
         // L'icône reflète l'état d'épinglage ; un rafraîchissement périodique
@@ -62,9 +64,11 @@ final class StatusItemController: NSObject {
 
     // MARK: - Icône
 
+    /// L'icône reflète l'état de l'entrée, cœur de l'app. L'état de la sortie ne
+    /// change pas l'icône : surcharger l'icône de deux états la rendrait illisible.
     private var symbolName: String {
-        if controller.isPinnedDeviceMissing { return "mic.slash" }
-        return controller.isPinned ? "mic.badge.plus" : "mic"
+        if input.isPinnedDeviceMissing { return "mic.slash" }
+        return input.isPinned ? "mic.badge.plus" : "mic"
     }
 
     private func refreshIcon() {
@@ -95,7 +99,8 @@ final class StatusItemController: NSObject {
             return
         }
 
-        controller.refreshDevices()
+        input.refreshDevices()
+        output.refreshDevices()
         popover.show(relativeTo: button.bounds, of: button, preferredEdge: .maxY)
         // Sans activation, le panneau s'ouvre derrière la fenêtre active et ne
         // reçoit pas les clics.
@@ -180,8 +185,9 @@ final class StatusItemController: NSObject {
     }
 
     @objc private func quit() {
-        controller.keepAlive.deactivate()
-        controller.stopObserving()
+        input.keepAlive?.deactivate()
+        input.stopObserving()
+        output.stopObserving()
         NSApp.terminate(nil)
     }
 

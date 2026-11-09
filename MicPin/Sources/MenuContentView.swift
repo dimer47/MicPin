@@ -2,25 +2,22 @@ import SwiftUI
 
 /// Le panneau déroulant de la barre des menus.
 ///
-/// Présenté dans un `MenuBarExtra` en style `.window`, et non `.menu` : un menu
-/// natif ne peut pas héberger de curseur de volume ni les matériaux Liquid Glass.
+/// Présenté dans un `NSPopover` en vue SwiftUI, et non un menu natif : un menu ne
+/// peut pas héberger de curseur de volume ni les matériaux Liquid Glass.
+///
+/// Deux sections symétriques : l'entrée (micro) et la sortie (haut-parleurs). Chacune
+/// est pilotée par son propre `AudioDeviceController`, la logique étant identique.
 struct MenuContentView: View {
-    @Environment(MicrophoneController.self) private var controller
+    let input: AudioDeviceController
+    let output: AudioDeviceController
 
     var body: some View {
-        @Bindable var controller = controller
-
-        VStack(alignment: .leading, spacing: 14) {
-            header
-            deviceList
-
-            if let device = controller.currentDevice {
-                Divider().opacity(0.4)
-                VolumeSlider(device: device, volume: $controller.volume)
-            }
+        VStack(alignment: .leading, spacing: 16) {
+            DeviceSection(controller: input, title: "Entrée")
 
             Divider().opacity(0.4)
-            KeepAliveToggle(keepAlive: controller.keepAlive)
+
+            DeviceSection(controller: output, title: "Sortie")
 
             Divider().opacity(0.4)
             footer
@@ -29,18 +26,70 @@ struct MenuContentView: View {
         .frame(width: 320)
     }
 
+    // MARK: - Pied
+
+    /// Rappelle où trouver les réglages.
+    ///
+    /// Les réglages sont au clic droit, suivant la convention macOS : clic gauche
+    /// pour l'usage courant, clic droit pour la configuration. Sans cette mention,
+    /// rien ne l'indiquerait — un menu contextuel est invisible tant qu'on ne l'a
+    /// pas ouvert.
+    private var footer: some View {
+        HStack(spacing: 4) {
+            Image(systemName: "cursorarrow.click")
+                .font(.system(size: 9))
+            Text("Clic droit sur l'icône : démarrage, mises à jour, quitter")
+                .font(.system(size: 10))
+        }
+        .foregroundStyle(.tertiary)
+        .frame(maxWidth: .infinity, alignment: .center)
+    }
+}
+
+// MARK: - Section d'un sens (entrée ou sortie)
+
+/// Une section complète : en-tête, liste des périphériques, volume, et — pour
+/// l'entrée seule — le maintien du micro éveillé.
+private struct DeviceSection: View {
+    @Bindable var controller: AudioDeviceController
+    let title: String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            sectionLabel
+            header
+            deviceList
+
+            if let device = controller.currentDevice {
+                VolumeSlider(device: device, volume: $controller.volume)
+            }
+
+            if let keepAlive = controller.keepAlive {
+                KeepAliveToggle(keepAlive: keepAlive)
+            }
+        }
+    }
+
+    /// Étiquette discrète qui nomme le sens de la section.
+    private var sectionLabel: some View {
+        Text(title.uppercased())
+            .font(.system(size: 10, weight: .semibold))
+            .foregroundStyle(.tertiary)
+            .kerning(0.5)
+    }
+
     // MARK: - En-tête
 
     private var header: some View {
         HStack(spacing: 10) {
-            Image(systemName: controller.isPinned ? "pin.fill" : "mic.fill")
+            Image(systemName: headerSymbol)
                 .font(.system(size: 15, weight: .medium))
                 .foregroundStyle(controller.isPinned ? Color.accentColor : .primary)
                 .frame(width: 28, height: 28)
                 .glassEffect(.regular, in: .circle)
 
             VStack(alignment: .leading, spacing: 1) {
-                Text(controller.currentDevice?.name ?? "Aucune entrée")
+                Text(controller.currentDevice?.name ?? emptyName)
                     .font(.system(size: 13, weight: .semibold))
                     .lineLimit(1)
 
@@ -58,15 +107,26 @@ struct MenuContentView: View {
                         .font(.system(size: 12, weight: .medium))
                 }
                 .buttonStyle(.glass)
-                .help(controller.isPinned ? "Lever l'épinglage" : "Épingler ce micro")
+                .help(controller.isPinned ? "Lever l'épinglage" : "Épingler ce périphérique")
             }
         }
     }
 
-    /// Ligne d'état sous le nom du micro : elle explique ce que fait l'app à l'instant.
+    /// Symbole de l'en-tête : l'épingle quand un périphérique est épinglé, sinon
+    /// l'icône du sens (micro ou haut-parleur).
+    private var headerSymbol: String {
+        if controller.isPinned { return "pin.fill" }
+        return controller.scope == .output ? "speaker.wave.2.fill" : "mic.fill"
+    }
+
+    private var emptyName: String {
+        controller.scope == .output ? "Aucune sortie" : "Aucune entrée"
+    }
+
+    /// Ligne d'état sous le nom : elle explique ce que fait l'app à l'instant.
     private var statusLine: String {
         if controller.isPinnedDeviceMissing {
-            return "Micro épinglé débranché"
+            return controller.scope == .output ? "Sortie épinglée débranchée" : "Micro épinglé débranché"
         }
         if controller.isPinned {
             return "Épinglé — restauration auto"
@@ -74,12 +134,12 @@ struct MenuContentView: View {
         return "Suit les changements de macOS"
     }
 
-    // MARK: - Liste des micros
+    // MARK: - Liste des périphériques
 
     private var deviceList: some View {
         VStack(spacing: 2) {
             if controller.devices.isEmpty {
-                Text("Aucun micro détecté")
+                Text(emptyListLabel)
                     .font(.system(size: 12))
                     .foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -104,23 +164,8 @@ struct MenuContentView: View {
         }
     }
 
-    // MARK: - Pied
-
-    /// Rappelle où trouver les réglages.
-    ///
-    /// Les réglages sont au clic droit, suivant la convention macOS : clic gauche
-    /// pour l'usage courant, clic droit pour la configuration. Sans cette mention,
-    /// rien ne l'indiquerait — un menu contextuel est invisible tant qu'on ne l'a
-    /// pas ouvert.
-    private var footer: some View {
-        HStack(spacing: 4) {
-            Image(systemName: "cursorarrow.click")
-                .font(.system(size: 9))
-            Text("Clic droit sur l'icône : démarrage, mises à jour, quitter")
-                .font(.system(size: 10))
-        }
-        .foregroundStyle(.tertiary)
-        .frame(maxWidth: .infinity, alignment: .center)
+    private var emptyListLabel: String {
+        controller.scope == .output ? "Aucune sortie détectée" : "Aucun micro détecté"
     }
 }
 
@@ -212,7 +257,7 @@ private struct DeviceRow: View {
                         .foregroundStyle(isPinned ? Color.accentColor : .secondary)
                 }
                 .buttonStyle(.plain)
-                .help(isPinned ? "Lever l'épinglage" : "Épingler ce micro")
+                .help(isPinned ? "Lever l'épinglage" : "Épingler ce périphérique")
             }
 
             if isSelected {
@@ -244,7 +289,7 @@ private struct VolumeSlider: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack {
-                Text("Niveau d'entrée")
+                Text(label)
                     .font(.system(size: 11, weight: .medium))
                     .foregroundStyle(.secondary)
 
@@ -259,25 +304,37 @@ private struct VolumeSlider: View {
 
             if device.hasVolumeControl {
                 HStack(spacing: 8) {
-                    Image(systemName: "mic")
+                    Image(systemName: lowSymbol)
                         .font(.system(size: 10))
                         .foregroundStyle(.tertiary)
 
                     Slider(value: $volume, in: 0...1)
                         .controlSize(.small)
 
-                    Image(systemName: "mic.fill")
+                    Image(systemName: highSymbol)
                         .font(.system(size: 11))
                         .foregroundStyle(.tertiary)
                 }
             } else {
-                // Cas fréquent sur les micros USB et Bluetooth, dont le gain est
-                // géré par le matériel : on l'explique plutôt que de griser sans mot.
-                Text("Ce micro ne permet pas de régler son niveau depuis macOS.")
+                // Cas fréquent sur les périphériques USB et Bluetooth, dont le gain
+                // est géré par le matériel : on l'explique plutôt que de griser sans mot.
+                Text(unavailableLabel)
                     .font(.system(size: 11))
                     .foregroundStyle(.tertiary)
                     .fixedSize(horizontal: false, vertical: true)
             }
         }
+    }
+
+    private var isOutput: Bool { device.scope == .output }
+
+    private var label: String { isOutput ? "Niveau de sortie" : "Niveau d'entrée" }
+    private var lowSymbol: String { isOutput ? "speaker" : "mic" }
+    private var highSymbol: String { isOutput ? "speaker.wave.2.fill" : "mic.fill" }
+
+    private var unavailableLabel: String {
+        isOutput
+            ? "Cette sortie ne permet pas de régler son niveau depuis macOS."
+            : "Ce micro ne permet pas de régler son niveau depuis macOS."
     }
 }

@@ -1,16 +1,49 @@
 import CoreAudio
 import Foundation
 
-/// Un périphérique d'entrée audio tel que CoreAudio le décrit.
+/// Le sens d'un périphérique : entrée (micro) ou sortie (haut-parleurs, casque).
+///
+/// CoreAudio distingue les deux par un *scope* et par deux propriétés système de
+/// périphérique par défaut distinctes. Tout le code bas niveau est paramétré par
+/// cette valeur, ce qui permet de gérer entrée et sortie avec une seule logique.
+enum AudioScope {
+    case input
+    case output
+
+    /// Le scope CoreAudio correspondant, pour lire canaux et volume.
+    var coreAudio: AudioObjectPropertyScope {
+        switch self {
+        case .input: return kAudioObjectPropertyScopeInput
+        case .output: return kAudioObjectPropertyScopeOutput
+        }
+    }
+
+    /// La propriété système qui désigne le périphérique par défaut de ce sens.
+    var defaultDeviceSelector: AudioObjectPropertySelector {
+        switch self {
+        case .input: return kAudioHardwarePropertyDefaultInputDevice
+        case .output: return kAudioHardwarePropertyDefaultOutputDevice
+        }
+    }
+}
+
+/// Un périphérique audio tel que CoreAudio le décrit, en entrée ou en sortie.
 ///
 /// L'identité stable d'un périphérique est son `uid`, pas son `id` : l'AudioObjectID
 /// est réattribué à chaque rebranchement, l'UID survit aux redémarrages. C'est donc
 /// l'UID qui est persisté pour l'épinglage.
+///
+/// Un même périphérique physique (un casque USB, par exemple) peut apparaître à la
+/// fois en entrée et en sortie : ce sont alors deux `AudioDevice` distincts, de même
+/// `uid` mais de `scope` différent.
 struct AudioDevice: Identifiable, Hashable {
     let id: AudioObjectID
     let uid: String
     let name: String
     let transport: UInt32
+
+    /// Le sens de ce périphérique : entrée ou sortie.
+    let scope: AudioScope
 
     /// `true` si le périphérique expose un contrôle de volume d'entrée réglable.
     ///
@@ -29,15 +62,22 @@ struct AudioDevice: Identifiable, Hashable {
     var isBuiltIn: Bool { transport == kAudioDeviceTransportTypeBuiltIn }
 
     /// Nom du symbole SF Symbols qui illustre le type de connexion.
+    ///
+    /// Le symbole du périphérique intégré et le symbole par défaut dépendent du
+    /// sens : pour l'entrée, le micro intégré est le micro du Mac ; pour la sortie,
+    /// ce sont ses haut-parleurs. Les transports à symbole propre (USB, Bluetooth,
+    /// HDMI…) sont identiques dans les deux sens.
     var symbolName: String {
         switch transport {
-        case kAudioDeviceTransportTypeBuiltIn: return "laptopcomputer"
+        case kAudioDeviceTransportTypeBuiltIn:
+            return scope == .output ? "speaker.wave.2.fill" : "laptopcomputer"
         case kAudioDeviceTransportTypeBluetooth, kAudioDeviceTransportTypeBluetoothLE: return "wave.3.right"
         case kAudioDeviceTransportTypeUSB: return "cable.connector"
         case kAudioDeviceTransportTypeAggregate, kAudioDeviceTransportTypeVirtual: return "square.stack.3d.up"
         case kAudioDeviceTransportTypeDisplayPort, kAudioDeviceTransportTypeHDMI: return "display"
         case kAudioDeviceTransportTypeThunderbolt: return "bolt"
-        default: return "mic"
+        default:
+            return scope == .output ? "speaker.wave.2" : "mic"
         }
     }
 

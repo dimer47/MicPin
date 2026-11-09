@@ -4,13 +4,14 @@ import OSLog
 
 private let log = Logger(subsystem: "com.dimer47.MicPin", category: "CoreAudio")
 
-/// Accès bas niveau à CoreAudio : énumération des entrées, lecture et écriture
-/// du périphérique d'entrée par défaut et de son volume.
+/// Accès bas niveau à CoreAudio : énumération des périphériques, lecture et
+/// écriture du périphérique par défaut et de son volume, en entrée comme en sortie.
 ///
-/// Toutes les méthodes sont statiques et sans état. Les erreurs CoreAudio sont
-/// journalisées et converties en valeurs optionnelles ou en `Bool` : aucune ne
-/// remonte sous forme d'exception, car il n'y a rien d'utile à faire d'un échec
-/// de lecture de propriété au niveau appelant, sinon ignorer le périphérique.
+/// Toutes les méthodes sont statiques et sans état, et paramétrées par `AudioScope` :
+/// la même logique sert l'entrée (micro) et la sortie (haut-parleurs). Les erreurs
+/// CoreAudio sont journalisées et converties en valeurs optionnelles ou en `Bool` :
+/// aucune ne remonte sous forme d'exception, car il n'y a rien d'utile à faire d'un
+/// échec de lecture de propriété au niveau appelant, sinon ignorer le périphérique.
 enum CoreAudioBridge {
 
     // MARK: - Adresses de propriétés
@@ -60,14 +61,15 @@ enum CoreAudioBridge {
         return raw as String
     }
 
-    // MARK: - Énumération des entrées
+    // MARK: - Énumération des périphériques
 
-    /// Retourne tous les périphériques possédant au moins un canal d'entrée.
+    /// Retourne tous les périphériques possédant au moins un canal dans le sens demandé.
     ///
-    /// Les périphériques de sortie pure sont écartés en inspectant leur
-    /// configuration de flux sur le scope input : un `AudioBufferList` vide, ou
-    /// dont tous les buffers ont zéro canal, signale une absence d'entrée.
-    static func inputDevices() -> [AudioDevice] {
+    /// Les périphériques du sens opposé sont écartés en inspectant la configuration
+    /// de flux sur le scope correspondant : un `AudioBufferList` vide, ou dont tous
+    /// les buffers ont zéro canal, signale une absence de canal dans ce sens. Un
+    /// micro pur n'apparaît donc pas en sortie, et inversement.
+    static func devices(scope: AudioScope) -> [AudioDevice] {
         var addr = address(kAudioHardwarePropertyDevices)
         var size: UInt32 = 0
         guard AudioObjectGetPropertyDataSize(AudioObjectID(kAudioObjectSystemObject), &addr, 0, nil, &size) == noErr else {
@@ -84,8 +86,14 @@ enum CoreAudioBridge {
             return []
         }
 
-        return ids.compactMap(describe(device:))
+        return ids.compactMap { describe(device: $0, scope: scope) }
     }
+
+    /// Les périphériques d'entrée. Raccourci de lecture pour `devices(scope: .input)`.
+    static func inputDevices() -> [AudioDevice] { devices(scope: .input) }
+
+    /// Les périphériques de sortie. Raccourci de lecture pour `devices(scope: .output)`.
+    static func outputDevices() -> [AudioDevice] { devices(scope: .output) }
 
     /// Périphériques agrégés créés par CoreAudio pour son usage interne.
     ///
@@ -99,9 +107,10 @@ enum CoreAudioBridge {
             || name.hasPrefix("CADefaultDeviceAggregate")
     }
 
-    /// Construit la description d'un périphérique, ou `nil` s'il n'a pas d'entrée.
-    private static func describe(device id: AudioObjectID) -> AudioDevice? {
-        guard inputChannelCount(of: id) > 0 else { return nil }
+    /// Construit la description d'un périphérique, ou `nil` s'il n'a pas de canal
+    /// dans le sens demandé.
+    private static func describe(device id: AudioObjectID, scope: AudioScope) -> AudioDevice? {
+        guard channelCount(of: id, scope: scope) > 0 else { return nil }
 
         guard let uid = stringValue(of: id, address: address(kAudioDevicePropertyDeviceUID)) else {
             log.error("Périphérique \(id) sans UID, ignoré")
@@ -113,21 +122,22 @@ enum CoreAudioBridge {
         guard !isSystemAggregate(uid: uid, name: name) else { return nil }
 
         let transport = value(of: id, address: address(kAudioDevicePropertyTransportType), default: UInt32(0)) ?? 0
-        let channel = writableVolumeChannel(of: id)
+        let channel = writableVolumeChannel(of: id, scope: scope)
 
         return AudioDevice(
             id: id,
             uid: uid,
             name: name,
             transport: transport,
+            scope: scope,
             hasVolumeControl: channel != nil,
             volumeChannel: channel ?? 0
         )
     }
 
-    /// Nombre total de canaux d'entrée du périphérique.
-    private static func inputChannelCount(of id: AudioObjectID) -> Int {
-        var addr = address(kAudioDevicePropertyStreamConfiguration, scope: kAudioObjectPropertyScopeInput)
+    /// Nombre total de canaux du périphérique dans le sens demandé.
+    private static func channelCount(of id: AudioObjectID, scope: AudioScope) -> Int {
+        var addr = address(kAudioDevicePropertyStreamConfiguration, scope: scope.coreAudio)
         var size: UInt32 = 0
         guard AudioObjectGetPropertyDataSize(id, &addr, 0, nil, &size) == noErr, size > 0 else { return 0 }
 
@@ -145,19 +155,19 @@ enum CoreAudioBridge {
         return list.reduce(0) { $0 + Int($1.mNumberChannels) }
     }
 
-    // MARK: - Volume d'entrée
+    // MARK: - Volume
 
-    /// Trouve le canal sur lequel le volume d'entrée est réglable, s'il y en a un.
+    /// Trouve le canal sur lequel le volume est réglable dans ce sens, s'il y en a un.
     ///
     /// L'ordre de sondage n'est pas arbitraire : le canal maître (0) est testé en
     /// premier car l'écrire règle tous les canaux d'un coup. On ne se rabat sur les
     /// canaux individuels que s'il ne répond pas, ce qui est le cas de certaines
-    /// interfaces multi-entrées.
-    private static func writableVolumeChannel(of id: AudioObjectID) -> UInt32? {
+    /// interfaces multi-canaux.
+    private static func writableVolumeChannel(of id: AudioObjectID, scope: AudioScope) -> UInt32? {
         for channel in UInt32(0)...UInt32(2) {
             var addr = address(
                 kAudioDevicePropertyVolumeScalar,
-                scope: kAudioObjectPropertyScopeInput,
+                scope: scope.coreAudio,
                 element: channel
             )
             guard AudioObjectHasProperty(id, &addr) else { continue }
@@ -170,28 +180,28 @@ enum CoreAudioBridge {
         return nil
     }
 
-    /// Lit le volume d'entrée du périphérique, entre 0 et 1.
-    static func inputVolume(of device: AudioDevice) -> Float? {
+    /// Lit le volume du périphérique dans son sens, entre 0 et 1.
+    static func volume(of device: AudioDevice) -> Float? {
         guard device.hasVolumeControl else { return nil }
         return value(
             of: device.id,
             address: address(
                 kAudioDevicePropertyVolumeScalar,
-                scope: kAudioObjectPropertyScopeInput,
+                scope: device.scope.coreAudio,
                 element: device.volumeChannel
             ),
             default: Float(0)
         )
     }
 
-    /// Écrit le volume d'entrée du périphérique. La valeur est bornée à [0, 1].
+    /// Écrit le volume du périphérique dans son sens. La valeur est bornée à [0, 1].
     @discardableResult
-    static func setInputVolume(_ volume: Float, on device: AudioDevice) -> Bool {
+    static func setVolume(_ volume: Float, on device: AudioDevice) -> Bool {
         guard device.hasVolumeControl else { return false }
 
         var addr = address(
             kAudioDevicePropertyVolumeScalar,
-            scope: kAudioObjectPropertyScopeInput,
+            scope: device.scope.coreAudio,
             element: device.volumeChannel
         )
         var clamped = min(max(volume, 0), 1)
@@ -205,28 +215,39 @@ enum CoreAudioBridge {
         return true
     }
 
-    // MARK: - Périphérique d'entrée par défaut
+    // Noms historiques conservés pour l'entrée, où ils se lisent mieux à l'appel.
+    static func inputVolume(of device: AudioDevice) -> Float? { volume(of: device) }
 
-    /// L'AudioObjectID de l'entrée par défaut du système.
-    static func defaultInputDeviceID() -> AudioObjectID? {
+    @discardableResult
+    static func setInputVolume(_ volume: Float, on device: AudioDevice) -> Bool {
+        setVolume(volume, on: device)
+    }
+
+    // MARK: - Périphérique par défaut
+
+    /// L'AudioObjectID du périphérique par défaut du système dans ce sens.
+    static func defaultDeviceID(scope: AudioScope) -> AudioObjectID? {
         let id = value(
             of: AudioObjectID(kAudioObjectSystemObject),
-            address: address(kAudioHardwarePropertyDefaultInputDevice),
+            address: address(scope.defaultDeviceSelector),
             default: AudioObjectID(kAudioObjectUnknown)
         )
         guard let id, id != AudioObjectID(kAudioObjectUnknown) else { return nil }
         return id
     }
 
-    /// Définit le périphérique d'entrée par défaut du système.
+    static func defaultInputDeviceID() -> AudioObjectID? { defaultDeviceID(scope: .input) }
+    static func defaultOutputDeviceID() -> AudioObjectID? { defaultDeviceID(scope: .output) }
+
+    /// Définit le périphérique par défaut du système dans le sens du périphérique.
     ///
     /// Le succès est vérifié par relecture, et non d'après le code de retour :
     /// CoreAudio répond `noErr` à l'écriture d'un AudioObjectID inexistant tout
-    /// en laissant l'entrée inchangée. S'y fier ferait croire à une sélection
+    /// en laissant le réglage inchangé. S'y fier ferait croire à une sélection
     /// réussie sur un périphérique débranché entre-temps.
     @discardableResult
-    static func setDefaultInputDevice(_ device: AudioDevice) -> Bool {
-        var addr = address(kAudioHardwarePropertyDefaultInputDevice)
+    static func setDefaultDevice(_ device: AudioDevice) -> Bool {
+        var addr = address(device.scope.defaultDeviceSelector)
         var id = device.id
         let size = UInt32(MemoryLayout<AudioObjectID>.size)
         let status = AudioObjectSetPropertyData(
@@ -238,14 +259,17 @@ enum CoreAudioBridge {
             return false
         }
 
-        guard defaultInputDeviceID() == device.id else {
-            log.error("« \(device.name) » n'a pas été retenu comme entrée par défaut")
+        guard defaultDeviceID(scope: device.scope) == device.id else {
+            log.error("« \(device.name) » n'a pas été retenu comme périphérique par défaut")
             return false
         }
 
-        log.info("Entrée par défaut : « \(device.name) »")
+        log.info("Périphérique par défaut : « \(device.name) »")
         return true
     }
+
+    @discardableResult
+    static func setDefaultInputDevice(_ device: AudioDevice) -> Bool { setDefaultDevice(device) }
 
     // MARK: - Observation
 
@@ -310,13 +334,18 @@ enum CoreAudioBridge {
         )
     }
 
-    /// Observe les changements d'entrée par défaut — c'est ce signal qui déclenche
-    /// la reprise en main quand macOS bascule vers un autre micro.
-    static func observeDefaultInputDevice(handler: @escaping @Sendable () -> Void) -> Observation? {
+    /// Observe les changements de périphérique par défaut dans ce sens — c'est ce
+    /// signal qui déclenche la reprise en main quand macOS bascule vers un autre
+    /// périphérique.
+    static func observeDefaultDevice(scope: AudioScope, handler: @escaping @Sendable () -> Void) -> Observation? {
         observe(
             object: AudioObjectID(kAudioObjectSystemObject),
-            selector: kAudioHardwarePropertyDefaultInputDevice,
+            selector: scope.defaultDeviceSelector,
             handler: handler
         )
+    }
+
+    static func observeDefaultInputDevice(handler: @escaping @Sendable () -> Void) -> Observation? {
+        observeDefaultDevice(scope: .input, handler: handler)
     }
 }
